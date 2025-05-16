@@ -1,37 +1,33 @@
-# DataSpace
-A self-contained, self-modifying, self-replicating HTML-embedded file storage system with zero dependencies and dynamic document modification capabilities.
+# Rangler
+RocketMoney for data analytics. A full-stack AI data management tool that changes how businesses interact with their data through intelligent monitoring, analysis, and notification.
 
 ## About This Repository
-This repository serves as the public information hub and access point for the DataSpace technology. The core source code for DataSpace is maintained in a private repository to protect our proprietary patent-pending file storage and sharing technology. This repository is ONLY for remote access and information on DataSpace. For licensing inquiries regarding the DataSpace technology, please contact edan@analyticintelligencesolutions.com.
+This repository serves as the public information hub and access point for the Rangler technology. The core source code for Rangler is maintained in a private repository to protect our proprietary patent-pending data interaction and analysis technology. This repository is ONLY for remote access and information on Rangler. For licensing inquiries regarding the DataSpace technology, please contact edan@analyticintelligencesolutions.com.
 
-## Try DataSpace
-Visit https://edan-ais.github.io/DataSpace/ to experience the technology directly in your browser!
+## Try Rangler
+Visit https://edan-ais.github.io/Rangler/ to experience the technology directly in your browser!
 
 ## Patent Notice
-The DataSpace technology is patent-pending under provisional application number [APPLICATION NUMBER] filed with [PATENT OFFICE] on [FILING DATE].
+The Rangler technology is patent-pending under provisional application number [APPLICATION NUMBER] filed with [PATENT OFFICE] on [FILING DATE].
 
 This repository provides a demonstration implementation with limited usage rights ONLY. This code is NOT available for commercial use, modification, or redistribution without explicit licensing permission.
 
-## What is DataSpace?
-DataSpace is a self-modifying document that functions as its own file storage system. Unlike traditional client-server solutions that require backend infrastructure, DataSpace exists as a single HTML file that can be transmitted through standard file-sharing methods while preserving all embedded content. Users can access files with any standard web browser without additional software installation, account creation, or active network connection. This implementation eliminates dependencies on external services by internalizing all storage and retrieval functionality within the document itself.
+## What is Rangler?
+Traditional data analytics AI tools function essentially as "ChatGPT with graphs" - generating one-time visualizations that rarely provide ongoing value. Rangler takes a fundamentally different approach. Data analysts know that executives don't want another graph to look at; they want to be notified when something is wrong or could be improved. Rangler handles this by consistently tracking your data over time and sending notifications when action is needed - similar to how RocketMoney monitors financial activity, you don't need to log in to be told that your account is low or that you've spent $4,000 that month, it just tells you when you need to know. We automate the most valuable part of data analysis: identifying which questions the business should be asking in the first place.
 
 # Technical Architecture
 ## Core Technology Stack
-DataSpace implements file storage through document self-modification rather than client-server communication. The codebase consists of vanilla HTML, CSS, and JavaScript without external frameworks or dependencies. The system utilizes browser-native storage mechanisms for temporary data caching. File processing follows a defined pipeline: input files are processed through a proprietary encoding method and stored temporarily in the browser. For persistent storage, DataSpace embeds these encoded data within the HTML document structure or compresses them into a URL for transmission.
-
-The security implementation leverages inherent properties of the encoding process and browser security models. The proprietary encoding transforms binary data into a format that browsers interpret as data rather than executable instructions. The system incorporates validation checks during encoding and decoding operations to verify data integrity and reject malformed content. The client-side execution model isolates all processing within the browser sandbox, eliminating server-side attack surfaces. Data remains local to the user's device until explicit export operations are performed, with only the document owner retaining access to the modified file.
+At Rangler's core is the SQL Intelligence and Modeling Support (SIMS) Agent, a five-module framework that includes continuous intent monitoring, structured dialogue process flows, generative artificial intelligence, natural language understanding, and reusable query templates. This architecture eliminates the need for database expertise, time-intensive knowledge base setup, or understanding of underlying data structures. In rigorous testing across 350+ unique queries and 155 test participants, SIMS achieved 91.3% accuracy regardless of user technical expertise while reducing query processing time by 99.7% compared to traditional approaches.
 
 ## Key Features and User Benefits
-DataSpace provides file management functionality through a browser-based interface. The system supports multiple file formats with type-specific preview handlers that render content without external applications. The technical architecture offers specific operational advantages. The self-contained structure eliminates external dependencies, providing consistent functionality regardless of network connectivity. Data remains under user control with no automatic transmission to external systems. The removal of server infrastructure requirements reduces implementation complexity while maintaining core file management capabilities. The browser-based execution environment ensures cross-platform compatibility without requiring platform-specific installations.
+Rangler's process begins with a tracking command (e.g., "Track new hire onboarding, daily refresh cadence") and automatically breaks it into the comprehensive business questions it represents: monthly new hire volume, average onboarding duration, process bottlenecks, and deadline compliance. The system generates relevant visualizations for all these metrics, allowing users to add specific tracking parameters at any time. Rangler maintains ongoing analysis of data patterns and proactively notifies users of actionable insights, anomalies, or opportunities without requiring constant dashboard monitoring. Rangler achieves industry-leading performance with complex queries averaging a 7.2-second response completion time and comprehensive data translation completed within 17 seconds, even for advanced forecasting operations. The system combines turn-based conversation, dynamic data visualization, and query complexity scoring to translate raw data into actionable insights and context-relevant recommendations.
+
 
 ## Future Development
-Browser storage limitations could eventually constrain capacity, so advanced compression techniques and strategic partitioning will be implemented in the core process flow to help overcome these boundaries. The current design creates multiple file copies to ensure everything stays personal to the individual's computer, but manual file moving and deletion will quickly become impractical for collections of small, rapid changes. The intended fix is to create a virtual file system interface (potentially a parallel vector version of the computer's filing system) to automatically handle document deletion and replacement. To avoid any accidental deletion through the automated system, documents will be kept in a document purgatory in DataSpace until a certain amount of time has passed or you delete them, whichever comes first. The next full iteration of DataSpace will add support for more file types to have enhanced preview and editing capabilities, particularly being able to interact with content like video games and videos directly within the document. The following release should add support for global, online sharing of documents and files, not just peer-to-peer sharing, to allow for more collaborative document editing, offline knowledge bases, and portable development environments. We envision DataSpace becoming the standard for specialized document sharing in areas like education, healthcare documentation, creative media, and secure information exchange.
-
-## Development
-Clone the repository to your local machine using Git. No build process is required - simply serve the files locally using a basic HTTP server. Access the development version at localhost:8080 to start exploring the revolutionary capabilities of the DataSpace technology.
+Future enhancements will focus on expanding Rangler's notification capabilities, integration with additional data sources, and development of domain-specific intelligence modules for specialized business functions. Our vision is to make Rangler the standard for intelligent data monitoring across industries including finance, healthcare, retail, and manufacturing.
 
 ## System Requirements
-For optimal performance, DataSpace requires a modern browser (Chrome 76+, Firefox 69+, Safari 14+), JavaScript enabled with browser storage access, and at least 5MB of available browser storage.
+For optimal performance, Rangler requires a modern web browser with JavaScript enabled and appropriate data source access credentials.
 
 ## Legal Information
-For detailed legal information, please refer to our License, Terms of Use, and Privacy Policy documents.
+For detailed legal information, please refer to our License, Terms of Use, and Privacy Policy documents. For licensing inquiries regarding the Rangler technology, please contact edan@analyticintelligencesolutions.com.

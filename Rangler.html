@@ -1,0 +1,4687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rangler - Advanced Data Analytics Terminal</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.14.0/Sortable.min.js"></script>
+    <style>
+        :root {
+    --primary: #111827;
+    --secondary: #1f2937;
+    --card-bg: #374151;
+    --accent: #3b82f6;
+    --accent-hover: #2563eb;
+    --text: #f9fafb;
+    --text-secondary: #d1d5db;
+    --alert: #ef4444;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --info: #3b82f6;
+    --border-radius: 12px;
+    --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --animation-speed: 0.3s;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+body {
+    background-color: var(--primary);
+    color: var(--text);
+    padding: 0;
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+button {
+    cursor: pointer;
+    border: none;
+    outline: none;
+    border-radius: 8px;
+    transition: all var(--animation-speed) ease;
+}
+
+/* Layout components */
+.top-bar {
+    background-color: var(--secondary);
+    padding: 12px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: var(--shadow);
+    position: relative;
+    z-index: 10;
+    min-height: 70px; /* Added to ensure enough height for the trash can */
+}
+
+.logo {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--accent);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.logo-icon {
+    background-color: var(--accent);
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.sidebar .section-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: var(--card-bg);
+    padding: 16px;
+    margin: -20px -20px 16px -20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    height: 57px; /* Exact height to match chat-header */
+    box-sizing: border-box;
+    box-shadow: var(--shadow);
+}
+
+/* Chat sidebar styles */
+#chat-sidebar {
+    width: 380px; /* Wider than the monitoring sidebar */
+    border-left: 1px solid rgba(255, 255, 255, 0.1);
+    right: 0;
+    position: relative;
+}
+
+#chat-sidebar.collapsed {
+    width: 50px;
+    min-width: 50px;
+}
+
+.chat-container {
+    display: flex;
+    flex-direction: column;
+    height: calc(100% - 57px); /* Total height minus header */
+    padding: 0;
+    margin: 0;
+    overflow: hidden;
+}
+
+.chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.message {
+    max-width: 85%;
+    padding: 12px 16px;
+    border-radius: 12px;
+    font-size: 14px;
+    line-height: 1.5;
+    position: relative;
+}
+
+.system-message {
+    background-color: rgba(255, 255, 255, 0.05);
+    color: var(--text-secondary);
+    align-self: center;
+    text-align: center;
+    max-width: 90%;
+    font-size: 12px;
+    padding: 8px 12px;
+    border-radius: 16px;
+}
+
+.user-message {
+    background-color: var(--accent);
+    color: white;
+    align-self: flex-end;
+    border-bottom-right-radius: 4px;
+}
+
+.bot-message {
+    background-color: var(--card-bg);
+    color: var(--text);
+    align-self: flex-start;
+    border-bottom-left-radius: 4px;
+    display: flex;
+    gap: 12px;
+}
+
+.message-avatar {
+    width: 32px;
+    height: 32px;
+    background-color: rgba(59, 130, 246, 0.2);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--accent);
+    flex-shrink: 0;
+}
+
+.chat-input-container {
+    padding: 16px;
+    display: flex;
+    gap: 12px;
+    background-color: var(--secondary);
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.chat-input {
+    flex: 1;
+    background-color: var(--card-bg);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 12px 16px;
+    color: var(--text);
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s ease;
+}
+
+.chat-input:focus {
+    border-color: var(--accent);
+}
+
+.chat-send-btn {
+    width: 42px;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--accent);
+    color: white;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.chat-send-btn:hover {
+    background-color: var(--accent-hover);
+}
+
+/* Hide chat content when collapsed */
+#chat-sidebar.collapsed .chat-container {
+    display: none;
+}
+
+.sidebar.collapsed .section-title .toggle-panel-btn svg {
+    transform: rotate(180deg); /* This flips the arrow to point right when collapsed */
+}
+
+.sidebar {
+    width: 320px;
+    background-color: var(--secondary);
+    transition: width 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.rangler-notification-container {
+    position: fixed;
+    bottom: 55px; /* Above the footer */
+    right: 20px;
+    z-index: 1000;
+    pointer-events: none; /* Allow clicking through the container */
+    width: 400px; /* Fixed width for the container */
+    height: 120px; /* Fixed height to contain notifications */
+    overflow: hidden; /* Prevent notifications from overflowing */
+}
+
+.rangler-notification {
+    background-color: var(--secondary);
+    border-left: 4px solid var(--accent);
+    border-radius: var(--border-radius);
+    padding: 16px;
+    width: 100%; /* Fill the container width */
+    box-shadow: var(--shadow);
+    transition: transform 0.3s ease, opacity 0.2s ease;
+    pointer-events: auto; /* Make the notification itself clickable */
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    position: absolute; /* Position absolutely within container */
+    bottom: 0; /* Always at the bottom */
+    right: 0; /* Always at the right */
+    transform: translateX(100%); /* Start off-screen */
+    opacity: 0; /* Start invisible */
+}
+
+.rangler-notification.success {
+    border-left-color: var(--success);
+}
+
+.rangler-notification.warning {
+    border-left-color: var(--warning);
+}
+
+.rangler-notification.error {
+    border-left-color: var(--alert);
+}
+
+.rangler-notification.show {
+    transform: translateX(0); /* Slide in from the right */
+    opacity: 1; /* Fade in */
+}
+
+.rangler-notification.hide {
+    opacity: 0; /* Fade out but don't move */
+    transform: translateX(0); /* Keep in place */
+}
+
+.notification-icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(59, 130, 246, 0.2);
+    color: var(--accent);
+    flex-shrink: 0;
+}
+
+.notification-icon.success {
+    background-color: rgba(16, 185, 129, 0.2);
+    color: var(--success);
+}
+
+.notification-icon.warning {
+    background-color: rgba(245, 158, 11, 0.2);
+    color: var(--warning);
+}
+
+.notification-icon.error {
+    background-color: rgba(239, 68, 68, 0.2);
+    color: var(--alert);
+}
+
+.notification-content {
+    flex-grow: 1;
+}
+
+.notification-title {
+    font-weight: 600;
+    font-size: 15px;
+    margin-bottom: 4px;
+    color: var(--text);
+}
+
+.notification-message {
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+.notification-close {
+    color: var(--text-secondary);
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    font-size: 20px;
+    line-height: 1;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+}
+
+.notification-close:hover {
+    opacity: 1;
+}
+
+.notification-progress {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 3px;
+    background-color: rgba(59, 130, 246, 0.7);
+    width: 100%;
+    transform-origin: left;
+    border-bottom-left-radius: var(--border-radius);
+}
+
+.notification-progress.success {
+    background-color: rgba(16, 185, 129, 0.7);
+}
+
+.notification-progress.warning {
+    background-color: rgba(245, 158, 11, 0.7);
+}
+
+.notification-progress.error {
+    background-color: rgba(239, 68, 68, 0.7);
+}
+
+.toggle-item .metric-info span {
+    font-size: 14px; /* Reduced from default size */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.monitoring-section {
+    background-color: var(--secondary); /* Match sidebar background */
+    height: 100%; /* Take full height */
+    display: flex;
+    flex-direction: column;
+    height: 100%; /* Take full height of sidebar */
+    padding: 0;
+    margin: 0;
+}
+
+.toggle-items-container {
+    background-color: var(--secondary); /* Match sidebar background */
+    margin-top: 20px;
+    padding-top: 4px;
+}
+
+/* Ensure section title aligns perfectly */
+.sidebar .section-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: var(--card-bg);
+    padding: 16px;
+    margin: 0; /* Remove margins that were causing layout issues */
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    height: 57px;
+    box-sizing: border-box;
+    box-shadow: var(--shadow);
+    white-space: nowrap; /* Prevent title from wrapping */
+}
+
+/* Make sidebar take full available height */
+.sidebar {
+    padding-top: 0;
+    height: calc(100vh - 110px); /* Subtract header (70px) and footer (40px) */
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 0; /* Remove any bottom padding */
+    margin-bottom: 0; /* Remove any bottom margin */
+}
+
+/* Make monitoring section fill the entire sidebar */
+.monitoring-section {
+    background-color: var(--secondary);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    margin: 0;
+    width: 100%; /* Ensure full width */
+}
+
+/* Make toggle container fill all available space */
+.toggle-items-container {
+    background-color: var(--secondary);
+    margin-top: 20px;
+    padding: 4px 16px; /* Add horizontal padding */
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 20px;
+    min-height: calc(100% - 77px);
+    width: 100%; /* Ensure full width */
+}
+
+.system-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--text-secondary);
+    background-color: rgba(255, 255, 255, 0.05);
+    padding: 4px 10px;
+    border-radius: 16px;
+    margin-left: 12px; /* Space between title and status */
+    white-space: nowrap; /* Keep status on one line */
+}
+
+.dashboard-title-wrapper {
+    display: flex;
+    align-items: center;
+    flex-wrap: nowrap; /* Prevent wrapping to a new line */
+}
+
+.status-indicator.inactive {
+    background-color: var(--alert);
+}
+
+.status-indicator.warning {
+    background-color: var(--warning);
+}
+
+@keyframes pulse-indicator {
+    0% { opacity: 0.7; }
+    50% { opacity: 1; }
+    100% { opacity: 0.7; }
+}
+
+.status-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: var(--success);
+    animation: pulse-indicator 2s infinite;
+    flex-shrink: 0; /* Prevent the indicator from shrinking */
+}
+
+.actions {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+}
+
+.trash-container {
+    position: absolute;
+    top: 16px;
+    right: 300px; /* Changed from 24px to be more visible */
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 16px;
+    border-radius: var(--border-radius);
+    background-color: rgba(239, 68, 68, 0.15); /* Changed to be visible by default */
+    border: 2px dashed rgba(255, 255, 255, 0.2);
+    visibility: visible; /* Changed from hidden to visible */
+    opacity: 1; /* Changed from 0 to 1 */
+    transition: all 0.3s ease;
+    z-index: 5;
+}
+
+.trash-container.drag-active {
+    visibility: visible;
+    opacity: 1;
+    background-color: rgba(239, 68, 68, 0.15);
+    border-color: var(--alert);
+}
+
+.trash-container.hover {
+    background-color: rgba(239, 68, 68, 0.35);
+    transform: scale(1.05);
+}
+
+.trash-icon {
+    color: var(--alert);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.trash-label {
+    color: var(--alert);
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.btn {
+    padding: 10px 16px;
+    font-weight: 500;
+    font-size: 14px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-primary {
+    background-color: var(--accent);
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: var(--accent-hover);
+}
+
+.btn-outline {
+    background-color: transparent;
+    border: 1px solid var(--accent);
+    color: var(--accent);
+}
+
+.btn-outline:hover {
+    background-color: rgba(59, 130, 246, 0.1);
+}
+
+.btn-icon {
+    width: 42px;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--card-bg);
+    border-radius: 10px;
+    position: relative;
+}
+
+.btn-icon:hover {
+    background-color: #4b5563;
+}
+
+.alert-badge {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    background-color: var(--alert);
+    color: white;
+    font-size: 12px;
+    font-weight: 600;
+    min-width: 22px;
+    height: 22px;
+    border-radius: 11px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 6px;
+}
+
+.alert-actions {
+    display: flex;
+    align-items: center; /* Center buttons vertically */
+    gap: 8px; /* Space between buttons */
+    margin-left: 8px;
+    height: 28px; /* Match the height of the title */
+}
+
+.alert-action-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(255, 255, 255, 0.1);
+    border: none;
+    cursor: pointer;
+    color: var(--text-secondary);
+    transition: all 0.2s ease;
+}
+
+.alert-action-btn:hover {
+    transform: translateY(-2px);
+}
+
+.navigate-btn:hover {
+    background-color: var(--accent);
+    color: white;
+}
+
+.dismiss-btn:hover {
+    background-color: var(--alert);
+    color: white;
+}
+
+.main-content {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+    height: calc(100vh - 110px); /* Subtract top bar height */
+}
+
+/* Panel collapse/expand styles - UPDATED SECTION */
+.sidebar {
+    transition: width 0.3s ease, margin-left 0.3s ease, margin-right 0.3s ease;
+}
+
+.sidebar.collapsed {
+    width: 50px;
+    min-width: 50px;
+    overflow: hidden;
+}
+
+.sidebar.collapsed .section-title span,
+.sidebar.collapsed .toggle-items-container {
+    display: none;
+}
+
+.sidebar.collapsed .section-title {
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 16px 0;
+    text-align: center;
+}
+
+.sidebar.collapsed .section-title span {
+    display: block; /* Changed from 'none' to 'block' to show the text */
+    white-space: nowrap;
+    font-size: 14px; /* Added smaller font size for vertical text */
+    letter-spacing: 1px; /* Added letter spacing for better readability */
+}
+
+.sidebar.collapsed .section-title .toggle-panel-btn {
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%) rotate(180deg);
+    margin-top: 15px; /* Add some space between text and button */
+}
+
+.toggle-panel-btn {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    margin-left: auto;
+    transition: background-color 0.2s ease;
+}
+
+.toggle-panel-btn:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.toggle-panel-btn svg {
+    transition: transform 0.3s ease;
+}
+
+/* Adjust main content layout when panels are collapsed */
+.main-content.sidebar-collapsed .dashboard {
+    margin-left: 50px;
+}
+
+/* Fix for divider positions when panels are collapsed */
+.main-content.sidebar-collapsed .divider-sidebar {
+    left: 50px;
+}
+
+/* Ensure the collapsed panel buttons remain visible and properly positioned */
+.sidebar.collapsed .toggle-panel-btn {
+    transform: rotate(180deg);
+    margin: 0;
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+/* Fix any height issues when collapsing */
+.sidebar.collapsed {
+    height: 100%;
+}
+/* END OF UPDATED SECTION */
+
+.toggle-item {
+    background-color: #42516b;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    border-radius: var(--border-radius);
+    margin-bottom: 8px;
+    transition: all var(--animation-speed) ease;
+    cursor: pointer;
+    width: 100%;
+    box-sizing: border-box; /* Include padding in width calculation */
+}
+
+.toggle-item:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+}
+
+.toggle-item.active {
+    border-left: 4px solid var(--accent);
+}
+
+.toggle-item.sortable-ghost {
+    opacity: 0.4;
+    background-color: var(--accent);
+}
+
+.toggle-item.sortable-chosen {
+    background-color: var(--secondary);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+}
+
+.toggle-item .drag-handle {
+    cursor: grab;
+    margin-right: 8px;
+    opacity: 0.5;
+    transition: opacity 0.2s ease;
+}
+
+.toggle-item:hover .drag-handle {
+    opacity: 1;
+}
+
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 26px;
+    margin-left: auto; /* Push to the right side */
+    flex-shrink: 0; /* Prevent shrinking */
+}
+
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.command-bar-container {
+    display: flex;
+    align-items: center;
+    margin-left: 24px;
+    flex: 1;
+    max-width: 800px; /* Limit width to ensure it doesn't push other elements too far */
+}
+
+.command-bar {
+    background-color: var(--card-bg);
+    border-radius: 8px;
+    padding: 0 16px;
+    display: flex;
+    align-items: center;
+    height: 42px;
+    width: 100%;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.command-prompt {
+    color: var(--accent);
+    margin-right: 8px;
+    font-weight: bold;
+    font-size: 18px;
+}
+
+.command-input {
+    background: transparent;
+    border: none;
+    color: var(--text);
+    font-size: 14px;
+    width: 100%;
+    outline: none;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--alert);
+    border-radius: 6px;
+    transition: .3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text);
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+}
+
+.slider:after {
+    content: "OFF";
+}
+
+input:checked + .slider {
+    background-color: var(--success);
+}
+
+input:checked + .slider:after {
+    content: "ON";
+}
+
+.metric-icon {
+    width: 24px; /* Slightly smaller from 28px */
+    height: 24px; /* Slightly smaller from 28px */
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 10px;
+    background-color: rgba(59, 130, 246, 0.2);
+    color: var(--accent);
+    flex-shrink: 0;
+}
+
+/* Custom scrollbar styling */
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--secondary);
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--card-bg);
+    border-radius: 10px;
+    border: 2px solid var(--secondary);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--accent);
+}
+
+/* Firefox scrollbar styling */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: var(--card-bg) var(--secondary);
+}
+
+.dashboard::-webkit-scrollbar-thumb {
+    background: var(--card-bg);
+    border: 2px solid var(--secondary);
+}
+
+.dashboard::-webkit-scrollbar-thumb:hover {
+    background: var(--accent);
+}
+
+/* Footer bar styling */
+.footer-bar {
+    background-color: var(--secondary);
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    border-top: 1px solid rgba(0, 0, 0, 0.2);
+    color: var(--text-secondary);
+    font-size: 12px;
+    box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+    z-index: 5;
+}
+
+.footer-status {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.footer-links {
+    display: flex;
+    gap: 15px;
+}
+
+.footer-link {
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.footer-link:hover {
+    color: var(--accent);
+}
+
+.metric-info {
+    display: flex;
+    align-items: center;
+    flex: 1;
+    min-width: 0; /* Allow proper text truncation */
+    margin-right: 12px;
+    overflow: hidden; /* Prevent text overflow */
+}
+
+.metric-info span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.dashboard {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    height: 100%; /* Fill available height */
+    max-height: calc(100vh - 70px); /* Limit to viewport minus top bar */
+}
+
+.dashboard-header {
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+}
+
+.dashboard-title-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.dashboard-title {
+    font-size: 24px;
+    font-weight: 600;
+    margin: 0;
+    white-space: nowrap; /* Keep title on one line */
+}
+
+.visualization-card {
+    background-color: var(--secondary);
+    border-radius: var(--border-radius);
+    padding: 24px;
+    box-shadow: var(--shadow);
+}
+
+.visualization-card.sortable-ghost {
+    opacity: 0.4;
+    background-color: var(--accent);
+}
+
+.visualization-card.sortable-chosen {
+    transform: scale(1.02);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
+}
+
+.viz-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.viz-title {
+    font-size: 18px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.drag-handle {
+    cursor: grab;
+    opacity: 0.5;
+    transition: opacity 0.2s ease;
+}
+
+.visualization-card:hover .drag-handle {
+    opacity: 1;
+}
+
+.viz-controls {
+    display: flex;
+    gap: 10px;
+}
+
+.main-content {
+    position: relative;
+}
+
+.vertical-divider {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: linear-gradient(to bottom, 
+        rgba(255, 255, 255, 0.05),
+        rgba(255, 255, 255, 0.1) 10%,
+        rgba(255, 255, 255, 0.1) 90%,
+        rgba(255, 255, 255, 0.05));
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.2);
+    z-index: 5;
+}
+
+.divider-sidebar {
+    left: 320px; /* After sidebar width */
+}
+
+.viz-btn {
+    background-color: var(--card-bg);
+    color: var(--text);
+    border: none;
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 14px;
+}
+
+.viz-btn:hover {
+    background-color: #4b5563;
+}
+
+.viz-btn.active {
+    background-color: var(--accent);
+}
+
+.chart-container {
+    height: 300px;
+    width: 100%;
+    position: relative;
+}
+
+.insights-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+    margin-bottom: 10px;
+}
+
+.insight-card {
+    background-color: var(--secondary);
+    border-radius: var(--border-radius);
+    padding: 14px;
+    box-shadow: var(--shadow);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.insight-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+}
+
+.insight-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+    gap: 10px;
+}
+
+.insight-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(16, 185, 129, 0.2);
+    color: var(--success);
+    flex-shrink: 0;
+}
+
+.insight-icon.warn {
+    background-color: rgba(245, 158, 11, 0.2);
+    color: var(--warning);
+}
+
+.insight-icon.info {
+    background-color: rgba(59, 130, 246, 0.2);
+    color: var(--info);
+}
+
+.insight-title {
+    font-weight: 600;
+    font-size: 15px;
+}
+
+.insight-content {
+    color: var(--text-secondary);
+    line-height: 1.4;
+    font-size: 13px;
+}
+
+.charts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+    gap: 24px;
+}
+
+@media (max-width: 1100px) {
+    .charts-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Alert inbox modal */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    z-index: 1000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.modal-overlay.active {
+    display: flex;
+}
+
+.modal {
+    background-color: var(--secondary);
+    border-radius: var(--border-radius);
+    width: 100%;
+    max-width: 700px; /* Increased from 600px to 700px */
+    max-height: 80vh;
+    overflow: hidden;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    display: flex;
+    flex-direction: column;
+    animation: modalEnter 0.3s ease;
+}
+
+@keyframes modalEnter {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.modal-header {
+    padding: 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-title {
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 24px;
+    cursor: pointer;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+}
+
+.modal-close:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.modal-body {
+    padding: 20px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.alert-item {
+    background-color: var(--card-bg);
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 12px;
+    display: flex;
+    gap: 16px;
+    transition: all var(--animation-speed) ease;
+    border-left: 4px solid var(--alert);
+    position: relative;
+}
+
+.alert-item:hover {
+    transform: translateX(2px);
+}
+
+.alert-item.warning {
+    border-left-color: var(--warning);
+}
+
+.alert-item.info {
+    border-left-color: var(--info);
+}
+
+.alert-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.alert-icon.urgent {
+    background-color: rgba(239, 68, 68, 0.2);
+    color: var(--alert);
+}
+
+.alert-icon.warning {
+    background-color: rgba(245, 158, 11, 0.2);
+    color: var(--warning);
+}
+
+.alert-icon.info {
+    background-color: rgba(59, 130, 246, 0.2);
+    color: var(--info);
+}
+
+.alert-content {
+    flex: 1;
+    min-width: 0; /* Ensures text can wrap properly */
+}
+
+.alert-title {
+    font-weight: 600;
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 28px; /* Set fixed height to match buttons */
+}
+
+.alert-source {
+    font-size: 12px;
+    color: var(--text-secondary);
+    background-color: rgba(255, 255, 255, 0.1);
+    padding: 4px 8px;
+    border-radius: 4px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+}
+
+.alert-description {
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
+
+.alert-time {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-top: 8px;
+}
+
+/* Create new monitor modal */
+.create-monitor-container {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-label {
+    font-weight: 500;
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+.form-input {
+    background-color: var(--card-bg);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 12px 16px;
+    color: var(--text);
+    font-size: 16px;
+    outline: none;
+    transition: border-color 0.2s ease;
+}
+
+.form-input:focus {
+    border-color: var(--accent);
+}
+
+.form-select {
+    background-color: var(--card-bg);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 12px 16px;
+    color: var(--text);
+    font-size: 16px;
+    outline: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='white'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7' /%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 16px center;
+    background-size: 16px;
+}
+
+.checkbox-group {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+}
+
+.checkbox-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.checkbox-input {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--accent);
+}
+
+.step-buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+}
+
+.step-container {
+    display: none;
+}
+
+.step-container.active {
+    display: block;
+}
+
+.step-indicator {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 24px;
+}
+
+.step-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.step-dot.active {
+    background-color: var(--accent);
+}
+
+/* Footer styles */
+.footer {
+    background-color: var(--secondary);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 8px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 50;
+    height: 40px;
+    box-shadow: 0 -2px 4px -1px rgba(0, 0, 0, 0.1);
+}
+
+.footer-left {
+    color: var(--text-secondary);
+    font-size: 12px;
+}
+
+.footer-right {
+    color: var(--text-secondary);
+    font-size: 12px;
+}
+
+.dashboard, .sidebar {
+    max-height: calc(100vh - 110px);
+}
+
+/* Ensure footer doesn't overlap with scrollbar */
+@media screen and (max-width: 1200px) {
+    .footer {
+        width: calc(100% - 15px);
+    }
+}
+    </style>
+</head>
+<body>
+    <div class="top-bar">
+        <div class="logo">
+    <img src="C:\Users\wesle\Downloads\Untitled16_20250515140309.png" alt="Rangler Logo" class="logo-icon" style="width: 32px; height: 32px; border-radius: 8px;" />
+    <span style="font-family: 'GungsuhChe', 'SimSun', 'NSimSun', 'MS Mincho', 'FangSong', 'MS Gothic', 'BatangChe', monospace;">RANGLER</span>
+</div>
+        
+        <div class="actions">
+            <button class="btn-icon" id="trash-btn" style="background-color: rgba(239, 68, 68, 0.15); color: var(--alert);">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="3 6 5 6 21 6"></polyline>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                    <line x1="10" y1="11" x2="10" y2="17"></line>
+                    <line x1="14" y1="11" x2="14" y2="17"></line>
+                </svg>
+            </button>
+            
+            <button class="btn btn-primary" id="create-monitor-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                New Monitor
+            </button>
+
+<button class="btn-icon" id="export-chatbot-btn" title="Export Customer Chatbot">
+    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+        <line x1="9" y1="9" x2="15" y2="9"></line>
+        <line x1="9" y1="13" x2="15" y2="13"></line>
+    </svg>
+</button>
+
+            <button class="btn-icon" id="refresh-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.3"></path>
+                </svg>
+            </button>
+            
+            <button class="btn-icon" id="alerts-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                </svg>
+                <div class="alert-badge">5</div>
+            </button>
+        </div>
+    </div>
+    
+    <div class="main-content">
+        <div class="sidebar">
+            <div class="monitoring-section">
+                <div class="section-title">
+                    <span>Active Monitoring</span>
+                    <button class="toggle-panel-btn" id="toggle-sidebar">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="15 18 9 12 15 6"></polyline>
+                        </svg>
+                    </button>
+                </div>
+                
+                <div class="toggle-items-container" id="monitoring-toggles">
+                    <div class="toggle-item active" data-dashboard="new-hire">
+                        <div class="metric-info">
+                            <div class="drag-handle">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="8" y1="6" x2="21" y2="6"></line>
+                                    <line x1="8" y1="12" x2="21" y2="12"></line>
+                                    <line x1="8" y1="18" x2="21" y2="18"></line>
+                                    <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                                    <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                                    <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                                </svg>
+                            </div>
+                            <div class="metric-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                    <circle cx="12" cy="7" r="4"></circle>
+                                </svg>
+                            </div>
+                            <span>New Hire Onboarding</span>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    
+                    <div class="toggle-item" data-dashboard="revenue">
+                        <div class="metric-info">
+                            <div class="drag-handle">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="8" y1="6" x2="21" y2="6"></line>
+                                    <line x1="8" y1="12" x2="21" y2="12"></line>
+                                    <line x1="8" y1="18" x2="21" y2="18"></line>
+                                    <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                                    <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                                    <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                                </svg>
+                            </div>
+                            <div class="metric-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="12" y1="1" x2="12" y2="23"></line>
+                                    <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                                </svg>
+                            </div>
+                            <span>Revenue Analytics</span>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+<div class="toggle-item" data-dashboard="airbnb">
+    <div class="metric-info">
+        <div class="drag-handle">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="8" y1="6" x2="21" y2="6"></line>
+                <line x1="8" y1="12" x2="21" y2="12"></line>
+                <line x1="8" y1="18" x2="21" y2="18"></line>
+                <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                <line x1="3" y1="18" x2="3.01" y2="18"></line>
+            </svg>
+        </div>
+        <div class="metric-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                <polyline points="9 22 9 12 15 12 15 22"></polyline>
+            </svg>
+        </div>
+        <span>AirBNB Customer FAQs</span>
+    </div>
+    <label class="toggle-switch">
+        <input type="checkbox">
+        <span class="slider"></span>
+    </label>
+</div>
+
+<div class="toggle-item" data-dashboard="candy">
+    <div class="metric-info">
+        <div class="drag-handle">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="8" y1="6" x2="21" y2="6"></line>
+                <line x1="8" y1="12" x2="21" y2="12"></line>
+                <line x1="8" y1="18" x2="21" y2="18"></line>
+                <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                <line x1="3" y1="18" x2="3.01" y2="18"></line>
+            </svg>
+        </div>
+        <div class="metric-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
+                <line x1="7" y1="7" x2="7.01" y2="7"></line>
+            </svg>
+        </div>
+        <span>Candy Shop Shopify</span>
+    </div>
+    <label class="toggle-switch">
+        <input type="checkbox">
+        <span class="slider"></span>
+    </label>
+</div>
+                    
+                    <div class="toggle-item" data-dashboard="customer">
+                        <div class="metric-info">
+                            <div class="drag-handle">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="8" y1="6" x2="21" y2="6"></line>
+                                    <line x1="8" y1="12" x2="21" y2="12"></line>
+                                    <line x1="8" y1="18" x2="21" y2="18"></line>
+                                    <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                                    <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                                    <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                                </svg>
+                            </div>
+                            <div class="metric-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                    <circle cx="9" cy="7" r="4"></circle>
+                                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                                </svg>
+                            </div>
+                            <span>Customer Engagement</span>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    
+                    <div class="toggle-item" data-dashboard="supply">
+                        <div class="metric-info">
+                            <div class="drag-handle">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="8" y1="6" x2="21" y2="6"></line>
+                                    <line x1="8" y1="12" x2="21" y2="12"></line>
+                                    <line x1="8" y1="18" x2="21" y2="18"></line>
+                                    <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                                    <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                                    <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                                </svg>
+                            </div>
+                            <div class="metric-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+                                    <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+                                </svg>
+                            </div>
+                            <span>Supply Chain</span>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+<div class="sidebar" id="chat-sidebar">
+            <div class="monitoring-section">
+                <div class="section-title">
+                    <span>AI Assistant</span>
+                    <button class="toggle-panel-btn" id="toggle-chat-sidebar">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="15 18 9 12 15 6"></polyline>
+                        </svg>
+                    </button>
+                </div>
+                
+                <div class="chat-container">
+                    <div class="chat-messages" id="chat-messages">
+                        
+                        
+                        <div class="message bot-message">
+                            <div class="message-avatar">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                                    <circle cx="12" cy="13" r="3"></circle>
+                                </svg>
+                            </div>
+                            <div class="message-content">
+                                I noticed that your new hire onboarding time has decreased by 8% this month. Would you like me to analyze what's contributing to this improvement?
+                            </div>
+                        </div>
+                        
+                        <div class="message user-message">
+                            <div class="message-content">
+                                Yes, please analyze the factors.
+                            </div>
+                        </div>
+                        
+                        <div class="message bot-message">
+                            <div class="message-avatar">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                                    <circle cx="12" cy="13" r="3"></circle>
+                                </svg>
+                            </div>
+                            <div class="message-content">
+                                After analyzing the data, I found 3 key factors:<br><br>
+                                1. The automated document verification system implemented last month has reduced paperwork processing time by 42%<br><br>
+                                2. HR team response time to new hire questions has improved from 24 hours to 4 hours on average<br><br>
+                                3. The new guided onboarding checklist is helping new hires complete tasks in the correct sequence, eliminating bottlenecks
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="chat-input-container">
+                        <input type="text" class="chat-input" placeholder="Type your message here..." id="chat-input">
+                        <button class="chat-send-btn">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="22" y1="2" x2="11" y2="13"></line>
+                                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="dashboard" id="new-hire-dashboard">
+            <div class="dashboard-header">
+                <div class="dashboard-title">New Hire Onboarding Analytics</div>
+                <div class="system-status">
+                    <div class="status-indicator"></div>
+                    System Active | Last updated: Just now
+                </div>
+            </div>
+                
+            <!-- Insights Section (now at top) -->
+            <div class="insights-container">
+                <div class="insight-card">
+                    <div class="insight-header">
+                        <div class="insight-icon warn">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <line x1="12" y1="16" x2="12" y2="12"></line>
+                                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                            </svg>
+                        </div>
+                        <div class="insight-title">Support Team Bottlenecks</div>
+                    </div>
+                    <div class="insight-content">
+                        The Support team has the longest onboarding completion time (avg. 18 days), primarily due to required security clearances. Consider separating mandatory forms from clearance processes.
+                    </div>
+                </div>
+                
+                <div class="insight-card">
+                    <div class="insight-header">
+                        <div class="insight-icon info">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                            </svg>
+                        </div>
+                        <div class="insight-title">Data Inconsistencies</div>
+                    </div>
+                    <div class="insight-content">
+                        Found 12 data inconsistencies in hire date formats. Suggest implementing standardized date format in ATS system to improve tracking accuracy.
+                    </div>
+                </div>
+                
+                <div class="insight-card">
+                    <div class="insight-header">
+                        <div class="insight-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <path d="M8 14s1.5 2 4 2 4-2 4-2"></path>
+                                <line x1="9" y1="9" x2="9.01" y2="9"></line>
+                                <line x1="15" y1="9" x2="15.01" y2="9"></line>
+                            </svg>
+                        </div>
+                        <div class="insight-title">IT Equipment Delays</div>
+                    </div>
+                    <div class="insight-content">
+                        IT onboarding shows consistent 2-day delays for equipment setup. Initiating equipment requests 48 hours earlier could eliminate most delays.
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Visualizations Section -->
+            <div class="charts-grid" id="new-hire-charts">
+                <div class="visualization-card">
+                    <div class="viz-header">
+                        <div class="viz-title">
+                            <div class="drag-handle">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="8" y1="6" x2="21" y2="6"></line>
+                                    <line x1="8" y1="12" x2="21" y2="12"></line>
+                                    <line x1="8" y1="18" x2="21" y2="18"></line>
+                                    <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                                    <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                                    <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                                </svg>
+                            </div>
+                            Onboarding Completion Times by Department
+                        </div>
+                        <div class="viz-controls">
+                            <button class="viz-btn active">30 Days</button>
+                            <button class="viz-btn">Quarterly</button>
+                            <button class="viz-btn">YTD</button>
+                        </div>
+                    </div>
+                    
+                    <div class="chart-container">
+                        <canvas id="departmentCompletionChart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="visualization-card">
+                    <div class="viz-header">
+                        <div class="viz-title">
+                            <div class="drag-handle">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="8" y1="6" x2="21" y2="6"></line>
+                                    <line x1="8" y1="12" x2="21" y2="12"></line>
+                                    <line x1="8" y1="18" x2="21" y2="18"></line>
+                                    <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                                    <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                                    <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                                </svg>
+                            </div>
+                            Task Completion Status
+                        </div>
+                        <div class="viz-controls">
+                            <button class="viz-btn active">All Tasks</button>
+                            <button class="viz-btn">Critical Tasks</button>
+                        </div>
+                    </div>
+                    
+                    <div class="chart-container">
+                        <canvas id="taskCompletionChart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="visualization-card">
+                    <div class="viz-header">
+                        <div class="viz-title">
+                            <div class="drag-handle">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="8" y1="6" x2="21" y2="6"></line>
+                                    <line x1="8" y1="12" x2="21" y2="12"></line>
+                                    <line x1="8" y1="18" x2="21" y2="18"></line>
+                                    <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                                    <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                                    <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                                </svg>
+                            </div>
+                            Onboarding Timeline Trend
+                        </div>
+                        <div class="viz-controls">
+                            <button class="viz-btn active">2025</button>
+                            <button class="viz-btn">2024-2025</button>
+                        </div>
+                    </div>
+                    
+                    <div class="chart-container">
+                        <canvas id="onboardingTrendChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+<div class="dashboard" id="airbnb-dashboard" style="display: none;">
+    <div class="dashboard-header">
+        <div class="dashboard-title">AirBNB Customer FAQs Analytics</div>
+        <div class="system-status">
+            <div class="status-indicator"></div>
+            System Active | Last updated: Just now
+        </div>
+    </div>
+    
+    <!-- Insights Section -->
+    <div class="insights-container">
+        <div class="insight-card">
+            <div class="insight-header">
+                <div class="insight-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+                        <polyline points="17 6 23 6 23 12"></polyline>
+                    </svg>
+                </div>
+                <div class="insight-title">Top Customer Inquiry</div>
+            </div>
+            <div class="insight-content">
+                "Pet-friendly properties" has become the most frequently asked question, with a 37% increase in the last 60 days. Consider highlighting this filter option more prominently.
+            </div>
+        </div>
+        
+        <div class="insight-card">
+            <div class="insight-header">
+                <div class="insight-icon warn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="16" x2="12" y2="12"></line>
+                        <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                    </svg>
+                </div>
+                <div class="insight-title">Unaddressed FAQ Gap</div>
+            </div>
+            <div class="insight-content">
+                There's a significant increase in questions about "work-friendly spaces" that are not currently addressed in the FAQ section. 68% of these inquiries come from users aged 25-34.
+            </div>
+        </div>
+        
+        <div class="insight-card">
+            <div class="insight-header">
+                <div class="insight-icon info">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                    </svg>
+                </div>
+                <div class="insight-title">Seasonal Trend</div>
+            </div>
+            <div class="insight-content">
+                Questions about properties with pools increase by 85% during summer months. Creating a seasonal FAQ section could reduce support volume by an estimated 22%.
+            </div>
+        </div>
+    </div>
+    
+    <!-- Visualizations Section -->
+    <div class="charts-grid" id="airbnb-charts">
+        <div class="visualization-card">
+            <div class="viz-header">
+                <div class="viz-title">
+                    <div class="drag-handle">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="8" y1="6" x2="21" y2="6"></line>
+                            <line x1="8" y1="12" x2="21" y2="12"></line>
+                            <line x1="8" y1="18" x2="21" y2="18"></line>
+                            <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                            <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                            <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                        </svg>
+                    </div>
+                    Top Property Feature Inquiries
+                </div>
+                <div class="viz-controls">
+                    <button class="viz-btn active">30 Days</button>
+                    <button class="viz-btn">90 Days</button>
+                    <button class="viz-btn">YTD</button>
+                </div>
+            </div>
+            
+            <div class="chart-container">
+                <canvas id="propertyFeaturesChart"></canvas>
+            </div>
+        </div>
+        
+        <div class="visualization-card">
+            <div class="viz-header">
+                <div class="viz-title">
+                    <div class="drag-handle">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="8" y1="6" x2="21" y2="6"></line>
+                            <line x1="8" y1="12" x2="21" y2="12"></line>
+                            <line x1="8" y1="18" x2="21" y2="18"></line>
+                            <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                            <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                            <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                        </svg>
+                    </div>
+                    FAQ Resolution Rate by Category
+                </div>
+                <div class="viz-controls">
+                    <button class="viz-btn active">All Questions</button>
+                    <button class="viz-btn">Priority Questions</button>
+                </div>
+            </div>
+            
+            <div class="chart-container">
+                <canvas id="faqResolutionChart"></canvas>
+            </div>
+        </div>
+        
+        <div class="visualization-card">
+            <div class="viz-header">
+                <div class="viz-title">
+                    <div class="drag-handle">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="8" y1="6" x2="21" y2="6"></line>
+                            <line x1="8" y1="12" x2="21" y2="12"></line>
+                            <line x1="8" y1="18" x2="21" y2="18"></line>
+                            <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                            <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                            <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                        </svg>
+                    </div>
+                    Property Availability vs FAQ Volume
+                </div>
+                <div class="viz-controls">
+                    <button class="viz-btn active">2025</button>
+                    <button class="viz-btn">2024-2025</button>
+                </div>
+            </div>
+            
+            <div class="chart-container">
+                <canvas id="propertyAvailabilityChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="dashboard" id="candy-dashboard" style="display: none;">
+    <div class="dashboard-header">
+        <div class="dashboard-title">Candy Shop Shopify Analytics</div>
+        <div class="system-status">
+            <div class="status-indicator"></div>
+            System Active | Last updated: Just now
+        </div>
+    </div>
+    
+    <!-- Insights Section -->
+    <div class="insights-container">
+        <div class="insight-card">
+            <div class="insight-header">
+                <div class="insight-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <path d="M8 14s1.5 2 4 2 4-2 4-2"></path>
+                        <line x1="9" y1="9" x2="9.01" y2="9"></line>
+                        <line x1="15" y1="9" x2="15.01" y2="9"></line>
+                    </svg>
+                </div>
+                <div class="insight-title">Top Performer</div>
+            </div>
+            <div class="insight-content">
+                Chocolate fudge is the best-selling item, accounting for 28% of total revenue. The "Gift Box Assortment" bundle with fudge has 3.2x higher conversion rate than other bundles.
+            </div>
+        </div>
+        
+        <div class="insight-card">
+            <div class="insight-header">
+                <div class="insight-icon warn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="12" y1="2" x2="12" y2="6"></line>
+                        <line x1="12" y1="18" x2="12" y2="22"></line>
+                        <line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line>
+                        <line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line>
+                        <line x1="2" y1="12" x2="6" y2="12"></line>
+                        <line x1="18" y1="12" x2="22" y2="12"></line>
+                        <line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line>
+                        <line x1="16.24" y1="7.76" x2="19.07" y2="4.93"></line>
+                    </svg>
+                </div>
+                <div class="insight-title">Low Inventory Alert</div>
+            </div>
+            <div class="insight-content">
+                Caramel sea salt fudge inventory is at 12% capacity with a 24% week-over-week increase in demand. Reorder point reached, estimate 7 days until stockout.
+            </div>
+        </div>
+        
+        <div class="insight-card">
+            <div class="insight-header">
+                <div class="insight-icon info">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="16" x2="12" y2="12"></line>
+                        <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                    </svg>
+                </div>
+                <div class="insight-title">Shopping Cart Behavior</div>
+            </div>
+            <div class="insight-content">
+                67% of abandoned carts contain gift boxes with shipping dates >7 days out. Adding an "Express Shipping" option could recover an estimated 42% of these abandoned carts.
+            </div>
+        </div>
+    </div>
+    
+    <!-- Visualizations Section -->
+    <div class="charts-grid" id="candy-charts">
+        <div class="visualization-card">
+            <div class="viz-header">
+                <div class="viz-title">
+                    <div class="drag-handle">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="8" y1="6" x2="21" y2="6"></line>
+                            <line x1="8" y1="12" x2="21" y2="12"></line>
+                            <line x1="8" y1="18" x2="21" y2="18"></line>
+                            <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                            <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                            <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                        </svg>
+                    </div>
+                    Top 10 Products by Sales Volume
+                </div>
+                <div class="viz-controls">
+                    <button class="viz-btn active">30 Days</button>
+                    <button class="viz-btn">90 Days</button>
+                    <button class="viz-btn">YTD</button>
+                </div>
+            </div>
+            
+            <div class="chart-container">
+                <canvas id="topProductsChart"></canvas>
+            </div>
+        </div>
+        
+        <div class="visualization-card">
+            <div class="viz-header">
+                <div class="viz-title">
+                    <div class="drag-handle">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="8" y1="6" x2="21" y2="6"></line>
+                            <line x1="8" y1="12" x2="21" y2="12"></line>
+                            <line x1="8" y1="18" x2="21" y2="18"></line>
+                            <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                            <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                            <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                        </svg>
+                    </div>
+                    Fudge Inventory Levels
+                </div>
+                <div class="viz-controls">
+                    <button class="viz-btn active">Current Stock</button>
+                    <button class="viz-btn">Forecasted</button>
+                </div>
+            </div>
+            
+            <div class="chart-container">
+                <canvas id="inventoryLevelsChart"></canvas>
+            </div>
+        </div>
+        
+        <div class="visualization-card">
+            <div class="viz-header">
+                <div class="viz-title">
+                    <div class="drag-handle">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="8" y1="6" x2="21" y2="6"></line>
+                            <line x1="8" y1="12" x2="21" y2="12"></line>
+                            <line x1="8" y1="18" x2="21" y2="18"></line>
+                            <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                            <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                            <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                        </svg>
+                    </div>
+                    Shopify Engagement Metrics
+                </div>
+                <div class="viz-controls">
+                    <button class="viz-btn active">Daily</button>
+                    <button class="viz-btn">Weekly</button>
+                </div>
+            </div>
+            
+            <div class="chart-container">
+                <canvas id="shopifyEngagementChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+        
+        <div class="dashboard" id="revenue-dashboard" style="display: none;">
+            <div class="dashboard-header">
+                <div class="dashboard-title">Revenue Analytics</div>
+                <div class="system-status">
+                    <div class="status-indicator"></div>
+                    System Active | Last updated: Just now
+                </div>
+            </div>    
+    
+            
+            <!-- Insights Section -->
+            <div class="insights-container">
+                <div class="insight-card">
+                    <div class="insight-header">
+                        <div class="insight-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+                                <polyline points="17 6 23 6 23 12"></polyline>
+                            </svg>
+                        </div>
+                        <div class="insight-title">Growth Acceleration</div>
+                    </div>
+                    <div class="insight-content">
+                        Monthly revenue growth has accelerated from 8.3% (Jan-Feb) to 12.5% (Apr-May). Enterprise customers segment is driving this acceleration with 3 new accounts in May.
+                    </div>
+                </div>
+                
+                <div class="insight-card">
+                    <div class="insight-header">
+                        <div class="insight-icon info">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <line x1="12" y1="16" x2="12" y2="12"></line>
+                                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                            </svg>
+                        </div>
+                        <div class="insight-title">Product Mix Shift</div>
+                    </div>
+                    <div class="insight-content">
+                        Premium tier subscriptions now make up 42% of total revenue, up from 35% in January. Consider expanding premium features to capitalize on this trend.
+                    </div>
+                </div>
+                
+                <div class="insight-card">
+                    <div class="insight-header">
+                        <div class="insight-icon warn">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="12" y1="2" x2="12" y2="6"></line>
+                                <line x1="12" y1="18" x2="12" y2="22"></line>
+                                <line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line>
+                                <line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line>
+                                <line x1="2" y1="12" x2="6" y2="12"></line>
+                                <line x1="18" y1="12" x2="22" y2="12"></line>
+                                <line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line>
+                                <line x1="16.24" y1="7.76" x2="19.07" y2="4.93"></line>
+                            </svg>
+                        </div>
+                        <div class="insight-title">Seasonal Revenue Pattern</div>
+                    </div>
+                    <div class="insight-content">
+                        Historical data shows a 15-20% revenue drop in Q3. Recommend preparing promotional campaign for July-August to mitigate typical seasonal decline.
+                    </div>
+                </div>
+            </div>
+                      
+            <!-- Visualizations Section -->
+            <div class="charts-grid" id="revenue-charts">
+                <div class="visualization-card">
+                    <div class="viz-header">
+                        <div class="viz-title">
+                            <div class="drag-handle">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="8" y1="6" x2="21" y2="6"></line>
+                                    <line x1="8" y1="12" x2="21" y2="12"></line>
+                                    <line x1="8" y1="18" x2="21" y2="18"></line>
+                                    <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                                    <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                                    <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                                </svg>
+                            </div>
+                            Monthly Revenue (2025)
+                        </div>
+                        <div class="viz-controls">
+                            <button class="viz-btn active">Monthly</button>
+                            <button class="viz-btn">Quarterly</button>
+                            <button class="viz-btn">YTD</button>
+                        </div>
+                    </div>
+                    
+                    <div class="chart-container">
+                        <canvas id="revenueMonthlyChart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="visualization-card">
+                    <div class="viz-header">
+                        <div class="viz-title">
+                            <div class="drag-handle">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="8" y1="6" x2="21" y2="6"></line>
+                                    <line x1="8" y1="12" x2="21" y2="12"></line>
+                                    <line x1="8" y1="18" x2="21" y2="18"></line>
+                                    <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                                    <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                                    <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                                </svg>
+                            </div>
+                            Revenue by Product Category
+                        </div>
+                        <div class="viz-controls">
+                            <button class="viz-btn active">2025</button>
+                            <button class="viz-btn">YoY Change</button>
+                        </div>
+                    </div>
+                    
+                    <div class="chart-container">
+                        <canvas id="revenueCategoryChart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="visualization-card">
+                    <div class="viz-header">
+                        <div class="viz-title">
+                            <div class="drag-handle">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="8" y1="6" x2="21" y2="6"></line>
+                                    <line x1="8" y1="12" x2="21" y2="12"></line>
+                                    <line x1="8" y1="18" x2="21" y2="18"></line>
+                                    <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                                    <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                                    <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                                </svg>
+                            </div>
+                            Revenue Forecast vs Actual
+                        </div>
+                        <div class="viz-controls">
+                            <button class="viz-btn active">Q1-Q2 2025</button>
+                            <button class="viz-btn">Full Year</button>
+                        </div>
+                    </div>
+                    
+                    <div class="chart-container">
+                        <canvas id="revenueForecastChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="dashboard" id="customer-dashboard" style="display: none;">
+            <div class="dashboard-header">
+                <div class="dashboard-title">Customer Engagement Analytics</div>
+                <div class="system-status">
+                    <div class="status-indicator"></div>
+                    System Active | Last updated: Just now
+                </div>
+            </div>
+            
+            <!-- Insights Section -->
+            <div class="insights-container">
+                <div class="insight-card">
+                    <div class="insight-header">
+                        <div class="insight-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                            </svg>
+                        </div>
+                        <div class="insight-title">NPS Score Improvement</div>
+                    </div>
+                    <div class="insight-content">
+                        NPS score has increased by 12 points (from 34 to 46) following the UI redesign launch in March. Customer interviews cite improved dashboard simplicity as the primary driver.
+                    </div>
+                </div>
+                
+                <div class="insight-card">
+                    <div class="insight-header">
+                        <div class="insight-icon warn">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                                <line x1="12" y1="9" x2="12" y2="13"></line>
+                                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                            </svg>
+                        </div>
+                        <div class="insight-title">Support Ticket Patterns</div>
+                    </div>
+                    <div class="insight-content">
+                        40% of all support tickets relate to the checkout process. The highest friction point appears to be the address validation step, which accounts for 62% of these tickets.
+                    </div>
+                </div>
+                
+                <div class="insight-card">
+                    <div class="insight-header">
+                        <div class="insight-icon info">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <line x1="12" y1="16" x2="12" y2="12"></line>
+                                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                            </svg>
+                        </div>
+                        <div class="insight-title">Feature Adoption</div>
+                    </div>
+                    <div class="insight-content">
+                        The new collaborative workspace feature has seen 78% adoption among enterprise customers but only 23% among SMB accounts. Consider targeted training for the SMB segment.
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Visualizations Section -->
+            <div class="charts-grid" id="customer-charts">
+                <div class="visualization-card">
+                    <div class="viz-header">
+                        <div class="viz-title">
+                            <div class="drag-handle">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="8" y1="6" x2="21" y2="6"></line>
+                                    <line x1="8" y1="12" x2="21" y2="12"></line>
+                                    <line x1="8" y1="18" x2="21" y2="18"></line>
+                                    <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                                    <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                                    <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                                </svg>
+                            </div>
+                            Monthly Active Users
+                        </div>
+                        <div class="viz-controls">
+                            <button class="viz-btn active">6 Months</button>
+                            <button class="viz-btn">12 Months</button>
+                            <button class="viz-btn">YTD</button>
+                        </div>
+                    </div>
+                    
+                    <div class="chart-container">
+                        <canvas id="mauChart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="visualization-card">
+                    <div class="viz-header">
+                        <div class="viz-title">
+                            <div class="drag-handle">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="8" y1="6" x2="21" y2="6"></line>
+                                    <line x1="8" y1="12" x2="21" y2="12"></line>
+                                    <line x1="8" y1="18" x2="21" y2="18"></line>
+                                    <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                                    <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                                    <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                                </svg>
+                            </div>
+                            Customer Satisfaction Scores
+                        </div>
+                        <div class="viz-controls">
+                            <button class="viz-btn active">NPS</button>
+                            <button class="viz-btn">CSAT</button>
+                        </div>
+                    </div>
+                    
+                    <div class="chart-container">
+                        <canvas id="satisfactionChart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="visualization-card">
+                    <div class="viz-header">
+                        <div class="viz-title">
+                            <div class="drag-handle">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="8" y1="6" x2="21" y2="6"></line>
+                                    <line x1="8" y1="12" x2="21" y2="12"></line>
+                                    <line x1="8" y1="18" x2="21" y2="18"></line>
+                                    <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                                    <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                                    <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                                </svg>
+                            </div>
+                            Feature Usage Distribution
+                        </div>
+                        <div class="viz-controls">
+                            <button class="viz-btn active">All Users</button>
+                            <button class="viz-btn">By Segment</button>
+                        </div>
+                    </div>
+                    
+                    <div class="chart-container">
+                        <canvas id="featureUsageChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="dashboard" id="supply-dashboard" style="display: none;">
+            <div class="dashboard-header">
+                <div class="dashboard-title">Supply Chain Analytics</div>
+                <div class="system-status">
+                    <div class="status-indicator"></div>
+                    System Active | Last updated: Just now
+                </div>
+            </div>
+            
+            <!-- Insights Section -->
+            <div class="insights-container">
+                <div class="insight-card">
+                    <div class="insight-header">
+                        <div class="insight-icon warn">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                                <line x1="12" y1="9" x2="12" y2="13"></line>
+                                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                            </svg>
+                        </div>
+                        <div class="insight-title">Inventory Risk</div>
+                    </div>
+                    <div class="insight-content">
+                        Component XJ-42 inventory levels are at 12% of normal and will be depleted within 14 days at current production rates. Primary supplier lead time is 35 days.
+                    </div>
+                </div>
+                
+                <div class="insight-card">
+                    <div class="insight-header">
+                        <div class="insight-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <path d="M8 14s1.5 2 4 2 4-2 4-2"></path>
+                                <line x1="9" y1="9" x2="9.01" y2="9"></line>
+                                <line x1="15" y1="9" x2="15.01" y2="9"></line>
+                            </svg>
+                        </div>
+                        <div class="insight-title">Logistics Efficiency</div>
+                    </div>
+                    <div class="insight-content">
+                        Average shipping cost decreased by 8.3% after consolidating shipments from the eastern distribution center. Consider similar consolidation strategy for western region.
+                    </div>
+                </div>
+                
+                <div class="insight-card">
+                    <div class="insight-header">
+                        <div class="insight-icon info">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+                                <polyline points="17 6 23 6 23 12"></polyline>
+                            </svg>
+                        </div>
+                        <div class="insight-title">Supplier Performance</div>
+                    </div>
+                    <div class="insight-content">
+                        Supplier quality ratings improved across 72% of vendors following the implementation of the new QA review process. Average defect rate has fallen from 2.7% to 1.3%.
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Visualizations Section -->
+            <div class="charts-grid" id="supply-charts">
+                <div class="visualization-card">
+                    <div class="viz-header">
+                        <div class="viz-title">
+                            <div class="drag-handle">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="8" y1="6" x2="21" y2="6"></line>
+                                    <line x1="8" y1="12" x2="21" y2="12"></line>
+                                    <line x1="8" y1="18" x2="21" y2="18"></line>
+                                    <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                                    <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                                    <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                                </svg>
+                            </div>
+                            Inventory Levels
+                        </div>
+                        <div class="viz-controls">
+                            <button class="viz-btn active">Critical</button>
+                            <button class="viz-btn">All</button>
+                            <button class="viz-btn">By Facility</button>
+                        </div>
+                    </div>
+                    
+                    <div class="chart-container">
+                        <canvas id="inventoryChart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="visualization-card">
+                    <div class="viz-header">
+                        <div class="viz-title">
+                            <div class="drag-handle">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="8" y1="6" x2="21" y2="6"></line>
+                                    <line x1="8" y1="12" x2="21" y2="12"></line>
+                                    <line x1="8" y1="18" x2="21" y2="18"></line>
+                                    <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                                    <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                                    <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                                </svg>
+                            </div>
+                            Production Delays by Cause
+                        </div>
+                        <div class="viz-controls">
+                            <button class="viz-btn active">Q2 2025</button>
+                            <button class="viz-btn">YTD</button>
+                        </div>
+                    </div>
+                    
+                    <div class="chart-container">
+                        <canvas id="delaysChart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="visualization-card">
+                    <div class="viz-header">
+                        <div class="viz-title">
+                            <div class="drag-handle">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="8" y1="6" x2="21" y2="6"></line>
+                                    <line x1="8" y1="12" x2="21" y2="12"></line>
+                                    <line x1="8" y1="18" x2="21" y2="18"></line>
+                                    <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                                    <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                                    <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                                </svg>
+                            </div>
+                            Supplier On-Time Delivery
+                        </div>
+                        <div class="viz-controls">
+                            <button class="viz-btn active">Top 10</button>
+                            <button class="viz-btn">All</button>
+                        </div>
+                    </div>
+                    
+                    <div class="chart-container">
+                        <canvas id="supplierOTDChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    
+    <!-- Alert Inbox Modal -->
+    <div class="modal-overlay" id="alerts-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">Alert Inbox</div>
+                <button class="modal-close" id="close-alerts">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="alert-item">
+                    <div class="alert-icon urgent">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                            <line x1="12" y1="9" x2="12" y2="13"></line>
+                            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                        </svg>
+                    </div>
+                    <div class="alert-content">
+                        <div class="alert-title">
+                            <span>New Hire: Onboarding Deadline</span>
+                        </div>
+                        <div class="alert-description">
+                            2 employees haven't completed onboarding paperwork. Deadline is tomorrow (May 15th).
+                        </div>
+                        <div class="alert-time">15 minutes ago</div>
+                    </div>
+                    <div class="alert-actions">
+                        <button class="alert-action-btn navigate-btn" data-dashboard="new-hire">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+                                <polyline points="10 17 15 12 10 7"></polyline>
+                                <line x1="15" y1="12" x2="3" y2="12"></line>
+                            </svg>
+                        </button>
+                        <button class="alert-action-btn dismiss-btn">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="18" y1="6" x2="6" y2="18"></line>
+                                <line x1="6" y1="6" x2="18" y2="18"></line>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="alert-item warning">
+                    <div class="alert-icon warning">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="12" y1="8" x2="12" y2="12"></line>
+                            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                        </svg>
+                    </div>
+                    <div class="alert-content">
+                        <div class="alert-title">
+                            <span>New Hire: Completion Rate Drop</span>
+                        </div>
+                        <div class="alert-description">
+                            Onboarding completion rate dropped 12% this month compared to previous quarter average.
+                        </div>
+                        <div class="alert-time">Two hours ago</div>
+                    </div>
+                    <div class="alert-actions">
+                        <button class="alert-action-btn navigate-btn" data-dashboard="new-hire">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+                                <polyline points="10 17 15 12 10 7"></polyline>
+                                <line x1="15" y1="12" x2="3" y2="12"></line>
+                            </svg>
+                        </button>
+                        <button class="alert-action-btn dismiss-btn">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="18" y1="6" x2="6" y2="18"></line>
+                                <line x1="6" y1="6" x2="18" y2="18"></line>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="alert-item">
+                    <div class="alert-icon urgent">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                            <line x1="12" y1="9" x2="12" y2="13"></line>
+                            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                        </svg>
+                    </div>
+                    <div class="alert-content">
+                        <div class="alert-title">
+                            <span>New Hire: Action Required: HR Policy Update</span>
+                        </div>
+                        <div class="alert-description">
+                            HR policy update needed for 3 onboarding documents that are causing confusion for new hires.
+                        </div>
+                        <div class="alert-time">Yesterday</div>
+                    </div>
+                    <div class="alert-actions">
+                        <button class="alert-action-btn navigate-btn" data-dashboard="new-hire">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+                                <polyline points="10 17 15 12 10 7"></polyline>
+                                <line x1="15" y1="12" x2="3" y2="12"></line>
+                            </svg>
+                        </button>
+                        <button class="alert-action-btn dismiss-btn">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="18" y1="6" x2="6" y2="18"></line>
+                                <line x1="6" y1="6" x2="18" y2="18"></line>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="alert-item warning">
+                    <div class="alert-icon warning">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                            <line x1="12" y1="9" x2="12" y2="13"></line>
+                            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                        </svg>
+                    </div>
+                    <div class="alert-content">
+                        <div class="alert-title">
+                            <span>Supply Chain: Supply Risk: Low Inventory</span>
+                        </div>
+                        <div class="alert-description">
+                            Component XJ-42 inventory critically low. Risk of production stoppage in 14 days.
+                        </div>
+                        <div class="alert-time">3 hours ago</div>
+                    </div>
+                    <div class="alert-actions">
+                        <button class="alert-action-btn navigate-btn" data-dashboard="supply">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+                                <polyline points="10 17 15 12 10 7"></polyline>
+                                <line x1="15" y1="12" x2="3" y2="12"></line>
+                            </svg>
+                        </button>
+                        <button class="alert-action-btn dismiss-btn">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="18" y1="6" x2="6" y2="18"></line>
+                                <line x1="6" y1="6" x2="18" y2="18"></line>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<div class="modal-overlay" id="export-chatbot-modal">
+    <div class="modal" style="max-width: 800px; width: 100%;">
+        <div class="modal-header">
+            <div class="modal-title">Export Customer Data Collection Chatbot</div>
+            <button class="modal-close" id="close-export-chatbot">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="export-container" style="padding: 0 15px;">
+                <p style="margin-bottom: 20px; color: var(--text-secondary);">
+                    This code creates a customer-facing chatbot that will collect data based on your active monitoring. 
+                    Copy and paste this script into your website to start gathering insights directly from your customers.
+                </p>
+                
+                <div class="preview-container" style="margin-bottom: 20px;">
+                    <h3 style="margin-bottom: 10px; font-size: 16px; color: var(--text);">Preview:</h3>
+                    <div id="chatbot-preview" style="border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; height: 400px; background-color: #fff; position: relative; overflow: hidden;">
+                        <!-- Preview will be inserted here by JavaScript -->
+                    </div>
+                </div>
+                
+                <div class="code-container" style="margin-bottom: 20px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <h3 style="font-size: 16px; color: var(--text);">Installation Code:</h3>
+                        <button class="btn btn-primary" id="copy-code-btn" style="padding: 8px 12px;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px;">
+                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                            </svg>
+                            Copy Code
+                        </button>
+                    </div>
+                    <div style="position: relative;">
+                        <pre id="chatbot-code" style="background-color: var(--card-bg); border-radius: 8px; padding: 16px; color: var(--text); overflow-x: auto; font-family: monospace; font-size: 14px; max-height: 200px; overflow-y: auto;"></pre>
+                    </div>
+                </div>
+                
+                <div class="customization-options" style="margin-bottom: 30px;">
+                    <h3 style="margin-bottom: 10px; font-size: 16px; color: var(--text);">Customization:</h3>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                        <div class="form-group">
+                            <label class="form-label">Primary Color</label>
+                            <input type="color" class="form-input" id="chatbot-color" value="#3b82f6" style="height: 42px;">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Welcome Message</label>
+                            <input type="text" class="form-input" id="chatbot-welcome" value="Hi there! How can I help you today?">
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="border-top: 1px solid rgba(255, 255, 255, 0.1); padding-top: 20px;">
+                    <p style="color: var(--text-secondary); font-size: 14px;">
+                        <strong>Note:</strong> This chatbot will automatically connect to your Rangler account and send collected data to your dashboard.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <!-- Create New Monitor Modal (With Consistent Button Classes) -->
+    <div class="modal-overlay" id="create-monitor-modal">
+      <div class="modal" style="max-width: 650px; width: 100%;">
+        <div class="modal-header">
+          <div class="modal-title">Create New Monitoring Dashboard</div>
+          <button class="modal-close" id="close-create-monitor">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="create-monitor-container" style="padding: 0 15px;">
+            <div class="step-container active" id="step1">
+              <div class="form-group" style="margin-bottom: 20px;">
+                <label class="form-label">Dashboard Name</label>
+                <input type="text" class="form-input" placeholder="E.g., Marketing Campaign Performance" />
+              </div>
+
+              <div id="data-sources-container" style="margin-bottom: 20px;">
+                <div class="form-group data-source-group">
+                  <label class="form-label">Data Source</label>
+                  <div style="display: flex; align-items: center; gap: 10px;">
+                    <select class="form-select" style="flex-grow: 1;">
+                      <option value="">Select data source</option>
+                      <option value="salesforce">Salesforce</option>
+                      <option value="hubspot">HubSpot</option>
+                      <option value="google_analytics">Google Analytics</option>
+                      <option value="excel">Excel Upload</option>
+                      <option value="database">Database Connection</option>
+                      <option value="mysql">MySQL</option>
+                      <option value="postgresql">PostgreSQL</option>
+                      <option value="mongodb">MongoDB</option>
+                      <option value="aws">AWS CloudWatch</option>
+                    </select>
+                    <button class="btn-icon" id="add-data-source" style="background-color: var(--accent);">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-group" style="margin-bottom: 30px;">
+                <label class="form-label">Refresh Frequency</label>
+                <select class="form-select">
+                  <option value="realtime">Real-time</option>
+                  <option value="hourly">Hourly</option>
+                  <option value="daily">Daily</option>
+                  <option value="weekly">Weekly</option>
+                  <option value="monthly">Monthly</option>
+                </select>
+              </div>
+
+              <div class="step-buttons" style="display: flex; justify-content: space-between; margin-top: 20px; padding-top: 20px; border-top: 1px solid rgba(255, 255, 255, 0.1);">
+                <button class="btn btn-outline" id="cancel-step1">Restart</button>
+                <button class="btn btn-primary" id="create-final">Create Dashboard</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Footer -->
+    <div class="footer">
+        <div class="footer-left">
+            Rangler Analytics Platform
+        </div>
+        <div class="footer-right">
+            v2.8.5
+        </div>
+    </div>
+
+<script>
+// Toggle Alert Inbox Modal
+const alertsBtn = document.getElementById('alerts-btn');
+const alertsModal = document.getElementById('alerts-modal');
+const closeAlerts = document.getElementById('close-alerts');
+
+alertsBtn.addEventListener('click', () => {
+    alertsModal.classList.add('active');
+});
+
+closeAlerts.addEventListener('click', () => {
+    alertsModal.classList.remove('active');
+});
+
+// Toggle Create Monitor Modal
+const createMonitorBtn = document.getElementById('create-monitor-btn');
+const createMonitorModal = document.getElementById('create-monitor-modal');
+const closeCreateMonitor = document.getElementById('close-create-monitor');
+
+createMonitorBtn.addEventListener('click', () => {
+    createMonitorModal.classList.add('active');
+});
+
+closeCreateMonitor.addEventListener('click', () => {
+    createMonitorModal.classList.remove('active');
+});
+
+const cancelStep1 = document.getElementById('cancel-step1');
+const createFinal = document.getElementById('create-final');
+const addDataSourceBtn = document.getElementById('add-data-source');
+const dataSourcesContainer = document.getElementById('data-sources-container');
+
+cancelStep1.addEventListener('click', () => {
+  // Clear all input fields
+  const inputs = createMonitorModal.querySelectorAll('input, select');
+  inputs.forEach(input => {
+    if (input.type === 'text') {
+      input.value = '';
+    } else if (input.type === 'select-one') {
+      input.selectedIndex = 0;
+    }
+  });
+  
+  // Remove any additional data sources except the first one
+  const dataSources = dataSourcesContainer.querySelectorAll('.data-source-group');
+  if (dataSources.length > 1) {
+    for (let i = 1; i < dataSources.length; i++) {
+      dataSources[i].remove();
+    }
+  }
+  
+  // Reset the first data source dropdown
+  const firstDataSource = dataSourcesContainer.querySelector('select');
+  if (firstDataSource) {
+    firstDataSource.selectedIndex = 0;
+  }
+});
+
+createFinal.addEventListener('click', () => {
+  // This would normally create the dashboard and add it to the sidebar
+  createMonitorModal.classList.remove('active');
+  
+  // For demo purposes, we'll just add a success notification
+  alert('New monitoring dashboard created successfully!');
+});
+
+// Add ability to add multiple data sources
+addDataSourceBtn.addEventListener('click', () => {
+  const newDataSource = document.createElement('div');
+  newDataSource.className = 'form-group data-source-group';
+  
+  newDataSource.innerHTML = `
+    <label class="form-label"></label>
+    <div style="display: flex; gap: 10px;">
+      <select class="form-select" style="flex-grow: 1;">
+        <option value="">Select data source</option>
+        <option value="salesforce">Salesforce</option>
+        <option value="hubspot">HubSpot</option>
+        <option value="google_analytics">Google Analytics</option>
+        <option value="excel">Excel Upload</option>
+        <option value="database">Database Connection</option>
+        <option value="mysql">MySQL</option>
+        <option value="postgresql">PostgreSQL</option>
+        <option value="mongodb">MongoDB</option>
+        <option value="aws">AWS CloudWatch</option>
+      </select>
+      <button class="btn btn-outline remove-data-source" style="padding: 8px 12px; background-color: rgba(239, 68, 68, 0.15); border-color: var(--alert); min-width: 40px;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--alert)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+  `;
+  
+  dataSourcesContainer.appendChild(newDataSource);
+  
+  // Add event listener to the remove button
+  const removeBtn = newDataSource.querySelector('.remove-data-source');
+  removeBtn.addEventListener('click', () => {
+    newDataSource.remove();
+  });
+});
+
+// Dashboard switching logic
+const toggleItems = document.querySelectorAll('.toggle-item');
+const dashboards = document.querySelectorAll('.dashboard');
+
+toggleItems.forEach(item => {
+    item.addEventListener('click', () => {
+        const dashboardId = item.dataset.dashboard + '-dashboard';
+        
+        // Hide all dashboards and remove active class from toggle items
+        dashboards.forEach(dash => dash.style.display = 'none');
+        toggleItems.forEach(toggle => toggle.classList.remove('active'));
+        
+        // Show the selected dashboard and mark toggle as active
+        document.getElementById(dashboardId).style.display = 'flex';
+        item.classList.add('active');
+    });
+});
+
+// Close modals when clicking outside
+alertsModal.addEventListener('click', (e) => {
+    if (e.target === alertsModal) {
+        alertsModal.classList.remove('active');
+    }
+});
+
+createMonitorModal.addEventListener('click', (e) => {
+    if (e.target === createMonitorModal) {
+        createMonitorModal.classList.remove('active');
+        // Reset wizard if needed
+    }
+});
+
+// Terminal functionality - basic command processing
+const terminals = document.querySelectorAll('.terminal input');
+
+terminals.forEach(terminal => {
+    terminal.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            const command = terminal.value.trim().toLowerCase();
+            
+            // Process command (this is a simple demo implementation)
+            if (command.includes('add bar') || command.includes('track')) {
+                // Simulate adding a chart element
+                terminal.value = 'Updating visualization...';
+                setTimeout(() => {
+                    terminal.value = '';
+                    alert('Visualization updated with new metric');
+                }, 1000);
+            } else if (command.includes('compare')) {
+                // Acknowledge the command
+                terminal.value = 'Generating comparison...';
+                setTimeout(() => {
+                    terminal.value = '';
+                    alert('Comparison view activated. Change would be applied here in a real implementation.');
+                }, 1000);
+            } else if (command.includes('show')) {
+                // Acknowledge the command
+                terminal.value = 'Loading data...';
+                setTimeout(() => {
+                    terminal.value = '';
+                    alert('Data visualization updated to show requested metrics.');
+                }, 1000);
+            } else {
+                // Default response
+                terminal.value = '';
+                alert(`Processing command: "${command}"`);
+            }
+        }
+    });
+});
+
+// Initialize Sortable for drag-and-drop functionality
+
+// 1. Monitoring toggle items in sidebar
+new Sortable(document.getElementById('monitoring-toggles'), {
+    animation: 150,
+    handle: '.drag-handle',
+    ghostClass: 'sortable-ghost',
+    chosenClass: 'sortable-chosen',
+    onEnd: function(evt) {
+        // You could save the new order to user preferences here
+        console.log('New toggle order saved');
+    }
+});
+
+// 2. Charts in each dashboard
+const chartGrids = document.querySelectorAll('.charts-grid');
+chartGrids.forEach(grid => {
+    new Sortable(grid, {
+        animation: 150,
+        handle: '.drag-handle',
+        ghostClass: 'sortable-ghost',
+        chosenClass: 'sortable-chosen',
+        onEnd: function(evt) {
+            // You could save the new chart order to user preferences here
+            console.log('New chart order saved for dashboard');
+        }
+    });
+});
+
+// Chart.js implementation
+// Function to make charts responsive to dark theme
+Chart.defaults.color = '#d1d5db';
+Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.1)';
+Chart.defaults.font.family = "'Inter', -apple-system, sans-serif";
+
+// Shared chart options
+const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+        legend: {
+            position: 'top',
+            labels: {
+                boxWidth: 15,
+                padding: 15
+            }
+        },
+        tooltip: {
+            backgroundColor: '#1f2937',
+            titleColor: '#f9fafb',
+            bodyColor: '#f9fafb',
+            borderColor: '#3b82f6',
+            borderWidth: 1,
+            padding: 10,
+            displayColors: false
+        }
+    }
+};
+
+// 1. New Hire Onboarding - Department Completion Times Chart
+const departmentCompletionCtx = document.getElementById('departmentCompletionChart').getContext('2d');
+new Chart(departmentCompletionCtx, {
+    type: 'bar',
+    data: {
+        labels: ['IT', 'HR', 'Finance', 'Sales', 'Support', 'Product', 'Ops'],
+        datasets: [{
+            label: 'Average Days to Complete',
+            data: [12, 17, 8, 15, 18, 10, 13],
+            backgroundColor: [
+                'rgba(59, 130, 246, 0.7)',
+                'rgba(59, 130, 246, 0.7)',
+                'rgba(59, 130, 246, 0.7)',
+                'rgba(59, 130, 246, 0.7)',
+                'rgba(239, 68, 68, 0.7)', // Highlight Support as high
+                'rgba(59, 130, 246, 0.7)',
+                'rgba(59, 130, 246, 0.7)'
+            ],
+            borderColor: [
+                'rgb(59, 130, 246)',
+                'rgb(59, 130, 246)',
+                'rgb(59, 130, 246)',
+                'rgb(59, 130, 246)',
+                'rgb(239, 68, 68)', // Highlight Support as high
+                'rgb(59, 130, 246)',
+                'rgb(59, 130, 246)'
+            ],
+            borderWidth: 1,
+            borderRadius: 5
+        }]
+    },
+    options: {
+        ...chartOptions,
+        scales: {
+            y: {
+                beginAtZero: true,
+                title: {
+                    display: true,
+                    text: 'Days'
+                }
+            }
+        }
+    }
+});
+
+// 2. New Hire Onboarding - Task Completion Status
+const taskCompletionCtx = document.getElementById('taskCompletionChart').getContext('2d');
+new Chart(taskCompletionCtx, {
+    type: 'doughnut',
+    data: {
+        labels: ['Completed', 'In Progress', 'Delayed', 'At Risk'],
+        datasets: [{
+            data: [68, 17, 10, 5],
+            backgroundColor: [
+                'rgba(16, 185, 129, 0.7)',  // Success color
+                'rgba(59, 130, 246, 0.7)',  // Primary color
+                'rgba(245, 158, 11, 0.7)',  // Warning color
+                'rgba(239, 68, 68, 0.7)'    // Alert color
+            ],
+            borderColor: [
+                'rgb(16, 185, 129)',
+                'rgb(59, 130, 246)',
+                'rgb(245, 158, 11)',
+                'rgb(239, 68, 68)'
+            ],
+            borderWidth: 1
+        }]
+    },
+    options: {
+        ...chartOptions,
+        cutout: '70%',
+        plugins: {
+            ...chartOptions.plugins,
+            tooltip: {
+                ...chartOptions.plugins.tooltip,
+                callbacks: {
+                    label: function(context) {
+                        return `${context.label}: ${context.raw}%`;
+                    }
+                }
+            }
+        }
+    }
+});
+
+// 3. New Hire Onboarding - Timeline Trend
+const onboardingTrendCtx = document.getElementById('onboardingTrendChart').getContext('2d');
+new Chart(onboardingTrendCtx, {
+    type: 'line',
+    data: {
+        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May'],
+        datasets: [{
+            label: 'Average Onboarding Days',
+            data: [16, 15, 14, 15, 14.2],
+            borderColor: 'rgb(59, 130, 246)',
+            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+            fill: true,
+            tension: 0.4,
+            borderWidth: 3,
+            pointBackgroundColor: 'rgb(59, 130, 246)',
+            pointBorderColor: '#fff',
+            pointRadius: 5,
+            pointHoverRadius: 7
+        },
+        {
+            label: 'Target',
+            data: [16, 14, 12, 10, 10],
+            borderColor: 'rgba(16, 185, 129, 0.7)',
+            borderDash: [5, 5],
+            borderWidth: 2,
+            fill: false,
+            pointRadius: 0
+        }]
+    },
+    options: {
+        ...chartOptions,
+        scales: {
+            y: {
+                beginAtZero: false,
+                title: {
+                    display: true,
+                    text: 'Days'
+                }
+            }
+        }
+    }
+});
+
+// 4. Revenue Analytics - Monthly Revenue Chart
+const revenueMonthlyCtx = document.getElementById('revenueMonthlyChart').getContext('2d');
+new Chart(revenueMonthlyCtx, {
+    type: 'bar',
+    data: {
+        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May'],
+        datasets: [{
+            label: 'Revenue (millions)',
+            data: [1.2, 1.3, 1.4, 1.6, 1.8],
+            backgroundColor: 'rgba(16, 185, 129, 0.7)',
+            borderColor: 'rgb(16, 185, 129)',
+            borderWidth: 1,
+            borderRadius: 5
+        }]
+    },
+    options: {
+        ...chartOptions,
+        scales: {
+            y: {
+                beginAtZero: true,
+                title: {
+                    display: true,
+                    text: 'Revenue ($ millions)'
+                }
+            }
+        }
+    }
+});
+
+// 5. Revenue Analytics - Revenue by Category
+const revenueCategoryCtx = document.getElementById('revenueCategoryChart').getContext('2d');
+new Chart(revenueCategoryCtx, {
+    type: 'pie',
+    data: {
+        labels: ['Basic Tier', 'Premium Tier', 'Enterprise', 'Services', 'Other'],
+        datasets: [{
+            data: [28, 42, 20, 8, 2],
+            backgroundColor: [
+                'rgba(59, 130, 246, 0.7)',
+                'rgba(16, 185, 129, 0.7)',
+                'rgba(139, 92, 246, 0.7)',
+                'rgba(245, 158, 11, 0.7)',
+                'rgba(107, 114, 128, 0.7)'
+            ],
+            borderColor: [
+                'rgb(59, 130, 246)',
+                'rgb(16, 185, 129)',
+                'rgb(139, 92, 246)',
+                'rgb(245, 158, 11)',
+                'rgb(107, 114, 128)'
+            ],
+            borderWidth: 1
+        }]
+    },
+    options: {
+        ...chartOptions
+    }
+});
+
+// 6. Revenue Analytics - Forecast vs Actual
+const revenueForecastCtx = document.getElementById('revenueForecastChart').getContext('2d');
+new Chart(revenueForecastCtx, {
+    type: 'line',
+    data: {
+        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+        datasets: [{
+            label: 'Actual',
+            data: [1.2, 1.3, 1.4, 1.6, 1.8, null],
+            borderColor: 'rgb(16, 185, 129)',
+            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+            fill: true,
+            tension: 0.4,
+            borderWidth: 3,
+            pointBackgroundColor: 'rgb(16, 185, 129)',
+            pointBorderColor: '#fff',
+            pointRadius: 5
+        },
+        {
+            label: 'Forecast',
+            data: [1.1, 1.2, 1.3, 1.5, 1.7, 1.9],
+            borderColor: 'rgba(59, 130, 246, 0.7)',
+            borderDash: [5, 5],
+            backgroundColor: 'rgba(59, 130, 246, 0.05)',
+            fill: true,
+            tension: 0.4,
+            borderWidth: 2,
+            pointRadius: 3
+        }]
+    },
+    options: {
+        ...chartOptions,
+        scales: {
+            y: {
+                beginAtZero: false,
+                title: {
+                    display: true,
+                    text: 'Revenue ($ millions)'
+                }
+            }
+        }
+    }
+});
+
+// 7. Customer Engagement - Monthly Active Users
+const mauCtx = document.getElementById('mauChart').getContext('2d');
+new Chart(mauCtx, {
+    type: 'line',
+    data: {
+        labels: ['Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May'],
+        datasets: [{
+            label: 'Monthly Active Users',
+            data: [2450, 2680, 2850, 3100, 3400, 3750],
+            borderColor: 'rgb(59, 130, 246)',
+            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+            fill: true,
+            tension: 0.4,
+            borderWidth: 3,
+            pointBackgroundColor: 'rgb(59, 130, 246)',
+            pointBorderColor: '#fff',
+            pointRadius: 5
+        }]
+    },
+    options: {
+        ...chartOptions,
+        scales: {
+            y: {
+                beginAtZero: false,
+                title: {
+                    display: true,
+                    text: 'Users'
+                }
+            }
+        }
+    }
+});
+
+// 8. Customer Engagement - Satisfaction Scores
+const satisfactionCtx = document.getElementById('satisfactionChart').getContext('2d');
+new Chart(satisfactionCtx, {
+    type: 'line',
+    data: {
+        labels: ['Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May'],
+        datasets: [{
+            label: 'NPS Score',
+            data: [32, 34, 35, 38, 42, 46],
+            borderColor: 'rgb(16, 185, 129)',
+            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+            fill: true,
+            tension: 0.4,
+            borderWidth: 3,
+            pointBackgroundColor: 'rgb(16, 185, 129)',
+            pointBorderColor: '#fff',
+            pointRadius: 5
+        }]
+    },
+    options: {
+        ...chartOptions,
+        scales: {
+            y: {
+                min: 0,
+                max: 100,
+                title: {
+                    display: true,
+                    text: 'Score'
+                }
+            }
+        }
+    }
+});
+
+// 9. Customer Engagement - Feature Usage
+const featureUsageCtx = document.getElementById('featureUsageChart').getContext('2d');
+new Chart(featureUsageCtx, {
+    type: 'bar',
+    data: {
+        labels: ['Dashboard', 'Reports', 'Collab Space', 'Data Export', 'Mobile App', 'API'],
+        datasets: [{
+            label: 'Usage %',
+            data: [92, 78, 65, 42, 38, 27],
+            backgroundColor: 'rgba(59, 130, 246, 0.7)',
+            borderColor: 'rgb(59, 130, 246)',
+            borderWidth: 1,
+            borderRadius: 5
+        }]
+    },
+    options: {
+        ...chartOptions,
+        indexAxis: 'y',
+        scales: {
+            x: {
+                beginAtZero: true,
+                max: 100,
+                title: {
+                    display: true,
+                    text: 'Usage %'
+                }
+            }
+        }
+    }
+});
+
+// 10. Supply Chain - Inventory Levels
+const inventoryCtx = document.getElementById('inventoryChart').getContext('2d');
+new Chart(inventoryCtx, {
+    type: 'bar',
+    data: {
+        labels: ['XJ-42', 'TS-19', 'AB-33', 'LM-85', 'PD-64'],
+        datasets: [{
+            label: 'Current Stock %',
+            data: [12, 65, 78, 45, 92],
+            backgroundColor: [
+                'rgba(239, 68, 68, 0.7)', // Critical - below threshold
+                'rgba(59, 130, 246, 0.7)',
+                'rgba(16, 185, 129, 0.7)',
+                'rgba(245, 158, 11, 0.7)', // Warning - getting low
+                'rgba(16, 185, 129, 0.7)'
+            ],
+            borderColor: [
+                'rgb(239, 68, 68)',
+                'rgb(59, 130, 246)',
+                'rgb(16, 185, 129)',
+                'rgb(245, 158, 11)',
+                'rgb(16, 185, 129)'
+            ],
+            borderWidth: 1,
+            borderRadius: 5
+        }]
+    },
+    options: {
+        ...chartOptions,
+        scales: {
+            y: {
+                beginAtZero: true,
+                max: 100,
+                title: {
+                    display: true,
+                    text: 'Stock Level %'
+                }
+            }
+        },
+        plugins: {
+            ...chartOptions.plugins,
+            tooltip: {
+                ...chartOptions.plugins.tooltip,
+                callbacks: {
+                    label: function(context) {
+                        return `${context.label}: ${context.raw}% of target`;
+                    }
+                }
+            }
+        }
+    }
+});
+
+// 11. Supply Chain - Production Delays by Cause
+const delaysCtx = document.getElementById('delaysChart').getContext('2d');
+new Chart(delaysCtx, {
+    type: 'pie',
+    data: {
+        labels: ['Material Shortage', 'Equipment Downtime', 'Quality Control', 'Staffing', 'Other'],
+        datasets: [{
+            data: [42, 23, 18, 12, 5],
+            backgroundColor: [
+                'rgba(239, 68, 68, 0.7)',
+                'rgba(245, 158, 11, 0.7)',
+                'rgba(59, 130, 246, 0.7)',
+                'rgba(139, 92, 246, 0.7)',
+                'rgba(107, 114, 128, 0.7)'
+            ],
+            borderColor: [
+                'rgb(239, 68, 68)',
+                'rgb(245, 158, 11)',
+                'rgb(59, 130, 246)',
+                'rgb(139, 92, 246)',
+                'rgb(107, 114, 128)'
+            ],
+            borderWidth: 1
+        }]
+    },
+    options: {
+        ...chartOptions
+    }
+});
+
+// 12. Supply Chain - Supplier On-Time Delivery
+const supplierOTDCtx = document.getElementById('supplierOTDChart').getContext('2d');
+new Chart(supplierOTDCtx, {
+    type: 'bar',
+    data: {
+        labels: ['Acme', 'Globex', 'Initech', 'Umbrella', 'Stark'],
+        datasets: [{
+            label: 'On-Time Delivery %',
+            data: [97, 92, 88, 76, 95],
+            backgroundColor: 'rgba(59, 130, 246, 0.7)',
+            borderColor: 'rgb(59, 130, 246)',
+            borderWidth: 1,
+            borderRadius: 5
+        },
+        {
+            label: 'Target',
+            data: [95, 95, 95, 95, 95],
+            type: 'line',
+            borderColor: 'rgba(16, 185, 129, 0.7)',
+            borderDash: [5, 5],
+            borderWidth: 2,
+            pointRadius: 0
+        }]
+    },
+    options: {
+        ...chartOptions,
+        scales: {
+            y: {
+                beginAtZero: false,
+                min: 70,
+                max: 100,
+                title: {
+                    display: true,
+                    text: 'On-Time Delivery %'
+                }
+            }
+        }
+    }
+});
+
+// New Charts for AirBNB and Candy Shop dashboards
+document.addEventListener('DOMContentLoaded', function() {
+    // AirBNB Dashboard Charts
+    
+    // 1. Property Features Chart
+    const propertyFeaturesCtx = document.getElementById('propertyFeaturesChart')?.getContext('2d');
+    if (propertyFeaturesCtx) {
+        new Chart(propertyFeaturesCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Pet-friendly', 'Pool', 'Wi-Fi', 'Work Space', 'Parking', 'Kitchen', 'A/C'],
+                datasets: [{
+                    label: 'Inquiry Volume',
+                    data: [485, 430, 380, 325, 290, 240, 210],
+                    backgroundColor: 'rgba(59, 130, 246, 0.7)',
+                    borderColor: 'rgb(59, 130, 246)',
+                    borderWidth: 1,
+                    borderRadius: 5
+                }]
+            },
+            options: {
+                ...chartOptions,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Number of Inquiries'
+                        }
+                    }
+                }
+            }
+        });
+    }
+    
+    // 2. FAQ Resolution Rate Chart
+    const faqResolutionCtx = document.getElementById('faqResolutionChart')?.getContext('2d');
+    if (faqResolutionCtx) {
+        new Chart(faqResolutionCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Resolved by FAQ', 'Required Support', 'Self-Resolved', 'Unresolved'],
+                datasets: [{
+                    data: [58, 22, 15, 5],
+                    backgroundColor: [
+                        'rgba(16, 185, 129, 0.7)',  // Success color
+                        'rgba(245, 158, 11, 0.7)',  // Warning color
+                        'rgba(59, 130, 246, 0.7)',  // Primary color
+                        'rgba(239, 68, 68, 0.7)'    // Alert color
+                    ],
+                    borderColor: [
+                        'rgb(16, 185, 129)',
+                        'rgb(245, 158, 11)',
+                        'rgb(59, 130, 246)',
+                        'rgb(239, 68, 68)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                ...chartOptions,
+                cutout: '70%',
+                plugins: {
+                    ...chartOptions.plugins,
+                    tooltip: {
+                        ...chartOptions.plugins.tooltip,
+                        callbacks: {
+                            label: function(context) {
+                                return `${context.label}: ${context.raw}%`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+    
+    // 3. Property Availability vs FAQ Volume Chart
+    const propertyAvailabilityCtx = document.getElementById('propertyAvailabilityChart')?.getContext('2d');
+    if (propertyAvailabilityCtx) {
+        new Chart(propertyAvailabilityCtx, {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May'],
+                datasets: [{
+                    label: 'Property Availability %',
+                    data: [68, 72, 65, 58, 54],
+                    borderColor: 'rgb(16, 185, 129)',
+                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                    fill: true,
+                    tension: 0.4,
+                    borderWidth: 3,
+                    pointBackgroundColor: 'rgb(16, 185, 129)',
+                    pointBorderColor: '#fff',
+                    pointRadius: 5,
+                    yAxisID: 'y'
+                },
+                {
+                    label: 'FAQ Volume',
+                    data: [320, 310, 360, 420, 480],
+                    borderColor: 'rgb(59, 130, 246)',
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    borderDash: [5, 5],
+                    fill: false,
+                    tension: 0.4,
+                    borderWidth: 3,
+                    pointBackgroundColor: 'rgb(59, 130, 246)',
+                    pointBorderColor: '#fff',
+                    pointRadius: 5,
+                    yAxisID: 'y1'
+                }]
+            },
+            options: {
+                ...chartOptions,
+                scales: {
+                    y: {
+                        type: 'linear',
+                        display: true,
+                        position: 'left',
+                        title: {
+                            display: true,
+                            text: 'Availability %'
+                        },
+                        min: 0,
+                        max: 100
+                    },
+                    y1: {
+                        type: 'linear',
+                        display: true,
+                        position: 'right',
+                        title: {
+                            display: true,
+                            text: 'FAQ Volume'
+                        },
+                        min: 0,
+                        grid: {
+                            drawOnChartArea: false
+                        }
+                    }
+                }
+            }
+        });
+    }
+    
+    // Candy Shop Dashboard Charts
+    
+    // 1. Top Products Chart
+    const topProductsCtx = document.getElementById('topProductsChart')?.getContext('2d');
+    if (topProductsCtx) {
+        new Chart(topProductsCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Chocolate Fudge', 'Caramel Sea Salt', 'Gift Box', 'Peanut Butter', 'Maple Walnut', 'Rocky Road', 'Mint Chocolate'],
+                datasets: [{
+                    label: 'Units Sold',
+                    data: [850, 720, 680, 540, 490, 420, 380],
+                    backgroundColor: 'rgba(16, 185, 129, 0.7)',
+                    borderColor: 'rgb(16, 185, 129)',
+                    borderWidth: 1,
+                    borderRadius: 5
+                }]
+            },
+            options: {
+                ...chartOptions,
+                indexAxis: 'y',
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Units Sold'
+                        }
+                    }
+                }
+            }
+        });
+    }
+    
+    // 2. Inventory Levels Chart
+    const inventoryLevelsCtx = document.getElementById('inventoryLevelsChart')?.getContext('2d');
+    if (inventoryLevelsCtx) {
+        new Chart(inventoryLevelsCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Chocolate', 'Caramel Sea Salt', 'Peanut Butter', 'Maple Walnut', 'Rocky Road', 'Mint Chocolate'],
+                datasets: [{
+                    label: 'Current Stock %',
+                    data: [65, 12, 78, 45, 92, 55],
+                    backgroundColor: [
+                        'rgba(59, 130, 246, 0.7)',
+                        'rgba(239, 68, 68, 0.7)', // Critical - below threshold
+                        'rgba(16, 185, 129, 0.7)',
+                        'rgba(245, 158, 11, 0.7)', // Warning - getting low
+                        'rgba(16, 185, 129, 0.7)',
+                        'rgba(59, 130, 246, 0.7)'
+                    ],
+                    borderColor: [
+                        'rgb(59, 130, 246)',
+                        'rgb(239, 68, 68)',
+                        'rgb(16, 185, 129)',
+                        'rgb(245, 158, 11)',
+                        'rgb(16, 185, 129)',
+                        'rgb(59, 130, 246)'
+                    ],
+                    borderWidth: 1,
+                    borderRadius: 5
+                }]
+            },
+            options: {
+                ...chartOptions,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        title: {
+                            display: true,
+                            text: 'Stock Level %'
+                        }
+                    }
+                }
+            }
+        });
+    }
+    
+    // 3. Shopify Engagement Chart
+    const shopifyEngagementCtx = document.getElementById('shopifyEngagementChart')?.getContext('2d');
+    if (shopifyEngagementCtx) {
+        new Chart(shopifyEngagementCtx, {
+            type: 'line',
+            data: {
+                labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                datasets: [{
+                    label: 'Page Views',
+                    data: [250, 310, 280, 320, 390, 480, 420],
+                    borderColor: 'rgb(59, 130, 246)',
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    fill: true,
+                    tension: 0.4,
+                    borderWidth: 3,
+                    pointBackgroundColor: 'rgb(59, 130, 246)',
+                    pointBorderColor: '#fff',
+                    pointRadius: 5,
+                    yAxisID: 'y'
+                },
+                {
+                    label: 'Conversion Rate %',
+                    data: [3.2, 3.8, 3.5, 3.9, 4.2, 4.8, 4.4],
+                    borderColor: 'rgb(16, 185, 129)',
+                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                    borderDash: [5, 5],
+                    fill: false,
+                    tension: 0.4,
+                    borderWidth: 3,
+                    pointBackgroundColor: 'rgb(16, 185, 129)',
+                    pointBorderColor: '#fff',
+                    pointRadius: 5,
+                    yAxisID: 'y1'
+                }]
+            },
+            options: {
+                ...chartOptions,
+                scales: {
+                    y: {
+                        type: 'linear',
+                        display: true,
+                        position: 'left',
+                        title: {
+                            display: true,
+                            text: 'Page Views'
+                        },
+                        beginAtZero: true
+                    },
+                    y1: {
+                        type: 'linear',
+                        display: true,
+                        position: 'right',
+                        title: {
+                            display: true,
+                            text: 'Conversion Rate %'
+                        },
+                        beginAtZero: true,
+                        max: 10,
+                        grid: {
+                            drawOnChartArea: false
+                        }
+                    }
+                }
+            }
+        });
+    }
+});
+
+// Create command bar in top bar
+document.addEventListener('DOMContentLoaded', function() {
+    // Create the command bar element
+    const commandBarHTML = `
+        <div class="command-bar-container">
+            <div class="command-bar">
+                <span class="command-prompt">></span>
+                <input type="text" class="command-input" placeholder="Type commands here (e.g., 'show completion trends by department')">
+            </div>
+        </div>
+    `;
+    
+    // Insert the command bar after the logo in the top bar
+    const logo = document.querySelector('.logo');
+    if (logo) {
+        logo.insertAdjacentHTML('afterend', commandBarHTML);
+        
+        // Setup command input functionality
+        const commandInput = document.querySelector('.command-input');
+        if (commandInput) {
+            commandInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    const command = commandInput.value.trim().toLowerCase();
+                    commandInput.value = '';
+                    
+                    // Process command
+                    if (command.includes('add bar') || command.includes('track')) {
+                        successNotification('Visualization updated with new metric', 'Chart Updated');
+                    } else if (command.includes('compare')) {
+                        successNotification('Comparison view activated', 'Comparison Ready');
+                    } else if (command.includes('show')) {
+                        successNotification('Data visualization updated to show requested metrics', 'Visualization Updated');
+                    } else {
+                        showNotification(`Processing command: "${command}"`, 'info', 'Command Received');
+                    }
+                }
+            });
+        }
+    }
+});
+
+// Export chatbot functionality - direct copy to clipboard
+const exportChatbotBtn = document.getElementById('export-chatbot-btn');
+
+if (exportChatbotBtn) {
+    exportChatbotBtn.addEventListener('click', () => {
+        // Generate code based on current active dashboard
+        const activeToggle = document.querySelector('.toggle-item.active');
+        const dashboardType = activeToggle ? activeToggle.dataset.dashboard : 'default';
+        
+        // Sample code to copy - a simplified version
+        const codeToExport = `
+// Rangler Customer Data Collection Chatbot
+// Automatically generated for ${dashboardType} dashboard
+// Installation: Add this script to your website
+
+(function() {
+  // Create chatbot container
+  const container = document.createElement('div');
+  container.style.position = 'fixed';
+  container.style.bottom = '20px';
+  container.style.right = '20px';
+  container.style.zIndex = '9999';
+  
+  // Create chat bubble
+  const bubble = document.createElement('div');
+  bubble.style.width = '60px';
+  bubble.style.height = '60px';
+  bubble.style.backgroundColor = '#3b82f6';
+  bubble.style.borderRadius = '50%';
+  bubble.style.display = 'flex';
+  bubble.style.alignItems = 'center';
+  bubble.style.justifyContent = 'center';
+  bubble.style.cursor = 'pointer';
+  bubble.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+  bubble.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path><line x1="9" y1="9" x2="15" y2="9"></line><line x1="9" y1="13" x2="15" y2="13"></line></svg>';
+  
+  // Add to container and document
+  container.appendChild(bubble);
+  document.body.appendChild(container);
+  
+  // Initialize chatbot
+  console.log("Rangler data collection chatbot initialized for ${dashboardType} dashboard");
+})();
+`;
+
+        // Copy the code to clipboard
+        navigator.clipboard.writeText(codeToExport)
+            .then(() => {
+                // Show success message using original notification system
+                successNotification('Chatbot code copied to clipboard!', 'Export Successful');
+            })
+            .catch(err => {
+                console.error('Failed to copy: ', err);
+                errorNotification('Error copying code to clipboard', 'Export Failed');
+            });
+    });
+}
+
+// Replace trash container with trash button functionality
+const trashBtn = document.getElementById('trash-btn');
+let isDragging = false;
+let draggedElement = null;
+let dragOverlayVisible = false;
+
+// Create a drag overlay when dragging starts
+function createDragOverlay() {
+    // Check if overlay already exists
+    if (document.getElementById('drag-overlay')) return;
+    
+    const overlay = document.createElement('div');
+    overlay.id = 'drag-overlay';
+    overlay.style.position = 'fixed';
+    overlay.style.top = '0';
+    overlay.style.left = '0';
+    overlay.style.width = '100%';
+    overlay.style.height = '100%';
+    overlay.style.backgroundColor = 'rgba(239, 68, 68, 0.05)';
+    overlay.style.zIndex = '999';
+    overlay.style.pointerEvents = 'none';
+    overlay.style.display = 'none'; // Start hidden
+    
+    const message = document.createElement('div');
+    message.id = 'drag-message';
+    message.style.position = 'fixed';
+    message.style.top = '50%';
+    message.style.left = '50%';
+    message.style.transform = 'translate(-50%, -50%)';
+    message.style.opacity = '0';
+    message.style.transition = 'opacity 0.3s ease';
+    message.innerHTML = `
+        <div style="text-align: center; color: var(--alert); background-color: rgba(239, 68, 68, 0.15); padding: 16px 24px; border-radius: 12px; border: 2px dashed var(--alert);">
+            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin: 0 auto 12px;">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                <line x1="10" y1="11" x2="10" y2="17"></line>
+                <line x1="14" y1="11" x2="14" y2="17"></line>
+            </svg>
+            <div style="font-weight: 500; font-size: 18px;">Drop to delete</div>
+        </div>
+    `;
+    overlay.appendChild(message);
+    document.body.appendChild(overlay);
+    dragOverlayVisible = false;
+}
+
+function showDeleteMessage() {
+    const overlay = document.getElementById('drag-overlay');
+    const message = document.getElementById('drag-message');
+    if (overlay && !dragOverlayVisible) {
+        overlay.style.display = 'block';
+        message.style.opacity = '1';
+        dragOverlayVisible = true;
+    }
+}
+
+function hideDeleteMessage() {
+    const overlay = document.getElementById('drag-overlay');
+    const message = document.getElementById('drag-message');
+    if (overlay && dragOverlayVisible) {
+        message.style.opacity = '0';
+        setTimeout(() => {
+            overlay.style.display = 'none';
+        }, 300);
+        dragOverlayVisible = false;
+    }
+}
+
+function removeDragOverlay() {
+    const overlay = document.getElementById('drag-overlay');
+    if (overlay) {
+        overlay.remove();
+    }
+    trashBtn.classList.remove('pulse');
+    dragOverlayVisible = false;
+}
+
+// Function to handle drag events for deletable items
+function setupDraggableItems() {
+    // For sidebar monitor items
+    const toggleItems = document.querySelectorAll('.toggle-item');
+    toggleItems.forEach(item => {
+        item.setAttribute('draggable', true);
+        
+        item.addEventListener('dragstart', (e) => {
+            isDragging = true;
+            draggedElement = item;
+            e.dataTransfer.setData('text/plain', item.dataset.dashboard);
+            e.dataTransfer.setData('type', 'monitor');
+            createDragOverlay();
+        });
+        
+        item.addEventListener('dragend', () => {
+            isDragging = false;
+            removeDragOverlay();
+        });
+    });
+    
+    // For visualization cards
+    const vizCards = document.querySelectorAll('.visualization-card');
+    vizCards.forEach(card => {
+        card.setAttribute('draggable', true);
+        
+        card.addEventListener('dragstart', (e) => {
+            isDragging = true;
+            draggedElement = card;
+            // Store a reference to the card's ID or position
+            e.dataTransfer.setData('text/plain', card.id || 'viz-card');
+            e.dataTransfer.setData('type', 'vizcard');
+            createDragOverlay();
+        });
+        
+        card.addEventListener('dragend', () => {
+            isDragging = false;
+            removeDragOverlay();
+        });
+    });
+}
+
+// Set up trash button as drop target
+trashBtn.addEventListener('dragover', (e) => {
+    if (isDragging) {
+        e.preventDefault(); // Allow drop
+        trashBtn.style.transform = 'scale(1.1)';
+        trashBtn.style.backgroundColor = 'rgba(239, 68, 68, 0.3)';
+        trashBtn.classList.add('pulse');
+        showDeleteMessage();
+    }
+});
+
+trashBtn.addEventListener('dragleave', () => {
+    trashBtn.style.transform = '';
+    trashBtn.style.backgroundColor = 'rgba(239, 68, 68, 0.15)';
+    trashBtn.classList.remove('pulse');
+    hideDeleteMessage();
+});
+
+trashBtn.addEventListener('drop', (e) => {
+    e.preventDefault();
+    trashBtn.style.transform = '';
+    trashBtn.style.backgroundColor = 'rgba(239, 68, 68, 0.15)';
+    trashBtn.classList.remove('pulse');
+    
+    const type = e.dataTransfer.getData('type');
+    const id = e.dataTransfer.getData('text/plain');
+    
+    if (type === 'monitor') {
+        // Delete monitor
+        const monitor = document.querySelector(`.toggle-item[data-dashboard="${id}"]`);
+        if (monitor) {
+            // Animation before removal
+            monitor.style.transform = 'translateX(-100%)';
+            monitor.style.opacity = '0';
+            setTimeout(() => {
+                monitor.remove();
+            }, 300);
+        }
+    } else if (type === 'vizcard') {
+        // Delete visualization card
+        const card = document.getElementById(id) || draggedElement;
+        if (card) {
+            // Animation before removal
+            card.style.transform = 'scale(0.8)';
+            card.style.opacity = '0';
+            setTimeout(() => {
+                card.remove();
+            }, 300);
+        }
+    }
+    
+    removeDragOverlay();
+});
+
+// Track drag position for the entire document to hide/show delete message
+document.addEventListener('dragover', (e) => {
+    if (!isDragging) return;
+    
+    // Check if we're near the trash button
+    const trashRect = trashBtn.getBoundingClientRect();
+    const expandedRect = {
+        left: trashRect.left - 100,
+        right: trashRect.right + 100,
+        top: trashRect.top - 100,
+        bottom: trashRect.bottom + 100
+    };
+    
+    // If mouse is within the expanded area around the trash button
+    if (
+        e.clientX >= expandedRect.left && 
+        e.clientX <= expandedRect.right && 
+        e.clientY >= expandedRect.top && 
+        e.clientY <= expandedRect.bottom
+    ) {
+        // We're near the trash button
+        trashBtn.classList.add('pulse');
+        showDeleteMessage();
+    } else {
+        // Not near the trash button
+        trashBtn.classList.remove('pulse');
+        hideDeleteMessage();
+    }
+});
+
+// Add pulse animation style
+const trashBtnStyle = document.createElement('style');
+trashBtnStyle.textContent = `
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.1); box-shadow: 0 0 10px rgba(239, 68, 68, 0.5); }
+        100% { transform: scale(1); }
+    }
+    .pulse {
+        animation: pulse 1s infinite;
+        background-color: rgba(239, 68, 68, 0.3) !important;
+    }
+`;
+document.head.appendChild(trashBtnStyle);
+
+// Initialize draggable items
+document.addEventListener('DOMContentLoaded', setupDraggableItems);
+
+// Refresh button functionality
+const refreshBtn = document.getElementById('refresh-btn');
+refreshBtn.addEventListener('click', () => {
+    // Show a spinner effect on the button
+    const originalInnerHTML = refreshBtn.innerHTML;
+    refreshBtn.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="animate-spin">
+            <circle cx="12" cy="12" r="10"></circle>
+            <path d="M16 12a4 4 0 1 1-8 0 4 4 0 0 1 8 0z"></path>
+        </svg>
+    `;
+    
+    // Simulate a refresh operation
+    setTimeout(() => {
+        // Restore original button
+        refreshBtn.innerHTML = originalInnerHTML;
+        
+        // Show a notification that data has been refreshed
+        alert('All dashboards refreshed with latest data');
+    }, 1500);
+});
+
+// Add CSS animation for the spin effect
+const styleElement = document.createElement('style');
+styleElement.textContent = `
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    .animate-spin {
+        animation: spin 1s linear infinite;
+    }
+`;
+document.head.appendChild(styleElement);
+
+// Alert panel functionality - navigation and dismissal
+function setupAlertActions() {
+    // Update alert count badge
+    function updateAlertCount() {
+        const alertCount = document.querySelectorAll('.alert-item').length;
+        const alertBadge = document.querySelector('.alert-badge');
+        
+        if (alertBadge) {
+            alertBadge.textContent = alertCount;
+            
+            // If no alerts, add empty state message
+            const alertBody = document.querySelector('.modal-body');
+            if (alertCount === 0 && alertBody) {
+                alertBody.innerHTML = `
+                    <div style="text-align: center; padding: 40px 20px;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin: 0 auto 16px;">
+                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                        </svg>
+                        <h3 style="color: var(--text); margin-bottom: 8px;">No alerts</h3>
+                        <p style="color: var(--text-secondary);">You're all caught up! We'll notify you when new alerts arrive.</p>
+                    </div>
+                `;
+            }
+        }
+    }
+    
+    // Setup navigation buttons
+    const navigateBtns = document.querySelectorAll('.navigate-btn');
+    navigateBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const dashboardId = btn.dataset.dashboard;
+            if (dashboardId) {
+                // Close the alerts modal
+                alertsModal.classList.remove('active');
+                
+                // Find and activate the corresponding dashboard
+                const dashboardElement = document.getElementById(`${dashboardId}-dashboard`);
+                const toggleItem = document.querySelector(`.toggle-item[data-dashboard="${dashboardId}"]`);
+                
+                if (dashboardElement && toggleItem) {
+                    // Hide all dashboards and remove active class from toggle items
+                    dashboards.forEach(dash => dash.style.display = 'none');
+                    toggleItems.forEach(toggle => toggle.classList.remove('active'));
+                    
+                    // Show the selected dashboard and mark toggle as active
+                    dashboardElement.style.display = 'flex';
+                    toggleItem.classList.add('active');
+                    
+                    // Enable the toggle if it's not already
+                    const toggleSwitch = toggleItem.querySelector('input[type="checkbox"]');
+                    if (toggleSwitch && !toggleSwitch.checked) {
+                        toggleSwitch.checked = true;
+                    }
+                    
+                    // Add a highlight animation to the dashboard
+                    dashboardElement.style.animation = 'highlight-pulse 1s';
+                    setTimeout(() => {
+                        dashboardElement.style.animation = '';
+                    }, 1000);
+                }
+            }
+        });
+    });
+    
+    // Setup dismiss buttons
+    const dismissBtns = document.querySelectorAll('.dismiss-btn');
+    dismissBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const alertItem = btn.closest('.alert-item');
+            if (alertItem) {
+                // Add dismiss animation
+                alertItem.style.opacity = '0';
+                alertItem.style.height = alertItem.offsetHeight + 'px';
+                alertItem.style.marginTop = '0';
+                alertItem.style.marginBottom = '0';
+                alertItem.style.paddingTop = '0';
+                alertItem.style.paddingBottom = '0';
+                alertItem.style.overflow = 'hidden';
+                
+                setTimeout(() => {
+                    alertItem.style.height = '0';
+                    setTimeout(() => {
+                        alertItem.remove();
+                        updateAlertCount();
+                    }, 300);
+                }, 300);
+            }
+        });
+    });
+    
+    // Add a highlight animation to dashboards
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes highlight-pulse {
+            0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.5) inset; }
+            50% { box-shadow: 0 0 0 20px rgba(59, 130, 246, 0.1) inset; }
+            100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0) inset; }
+        }
+    `;
+    document.head.appendChild(style);
+}
+
+// Initialize alert actions when the page loads
+document.addEventListener('DOMContentLoaded', setupAlertActions);
+
+// Sidebar toggle functionality
+const toggleSidebarBtn = document.getElementById('toggle-sidebar');
+const sidebar = document.querySelector('.sidebar');
+const mainContent = document.querySelector('.main-content');
+
+toggleSidebarBtn.addEventListener('click', () => {
+    sidebar.classList.toggle('collapsed');
+    mainContent.classList.toggle('sidebar-collapsed');
+});
+
+// Chat sidebar toggle functionality
+const toggleChatSidebarBtn = document.getElementById('toggle-chat-sidebar');
+const chatSidebar = document.getElementById('chat-sidebar');
+
+toggleChatSidebarBtn.addEventListener('click', () => {
+    chatSidebar.classList.toggle('collapsed');
+});
+
+// Chat functionality
+const chatInput = document.getElementById('chat-input');
+const chatMessages = document.getElementById('chat-messages');
+const chatSendBtn = document.querySelector('.chat-send-btn');
+
+// Function to add a new message
+function addMessage(content, type) {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `message ${type}-message`;
+    
+    let messageHTML = '';
+    
+    if (type === 'bot') {
+        messageHTML = `
+            <div class="message-avatar">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                    <circle cx="12" cy="13" r="3"></circle>
+                </svg>
+            </div>
+        `;
+    }
+    
+    messageHTML += `<div class="message-content">${content}</div>`;
+    messageDiv.innerHTML = messageHTML;
+    
+    chatMessages.appendChild(messageDiv);
+    
+    // Scroll to the bottom
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+// Send message function
+function sendMessage() {
+    const message = chatInput.value.trim();
+    if (message) {
+        // Add user message
+        addMessage(message, 'user');
+        chatInput.value = '';
+        
+        // Simulate bot response after a delay
+        setTimeout(() => {
+            let botResponse = "I'm analyzing your request...";
+            
+            // Simple keyword matching for demo purposes
+            if (message.toLowerCase().includes('onboarding')) {
+                botResponse = "Based on the onboarding data, I can see that the IT department has the fastest onboarding process at 12 days, while Support has the longest at 18 days. Would you like me to suggest optimization strategies?";
+            } else if (message.toLowerCase().includes('revenue')) {
+                botResponse = "Revenue has grown by 12.5% in the last quarter. The main driver appears to be the increase in Premium tier subscriptions, which now account for 42% of total revenue.";
+            } else if (message.toLowerCase().includes('help')) {
+                botResponse = "I can help you analyze data trends, suggest optimizations, answer questions about your metrics, or create custom reports. What would you like assistance with?";
+            }
+            
+            addMessage(botResponse, 'bot');
+        }, 1000);
+    }
+}
+
+// Event listeners for sending messages
+chatSendBtn.addEventListener('click', sendMessage);
+chatInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        sendMessage();
+    }
+});
+
+// Original notification system
+let currentNotification = null;
+
+// Create notification container if it doesn't exist
+document.addEventListener('DOMContentLoaded', function() {
+    if (!document.querySelector('.rangler-notification-container')) {
+        const container = document.createElement('div');
+        container.className = 'rangler-notification-container';
+        document.body.appendChild(container);
+    }
+});
+
+// Simplified showNotification function that replaces any existing notification
+function showNotification(message, type = 'info', title = '', duration = 5000) {
+    const container = document.querySelector('.rangler-notification-container');
+    if (!container) return;
+    
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = `rangler-notification ${type}`;
+    
+    // Set default title based on type if not provided
+    if (!title) {
+        switch(type) {
+            case 'success': title = 'Success'; break;
+            case 'warning': title = 'Warning'; break;
+            case 'error': title = 'Error'; break;
+            default: title = 'Information';
+        }
+    }
+    
+    // Set icon based on type
+    let iconSvg = '';
+    switch(type) {
+        case 'success':
+            iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>`;
+            break;
+        case 'warning':
+            iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>`;
+            break;
+        case 'error':
+            iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>`;
+            break;
+        default:
+            iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>`;
+    }
+    
+    // Build notification content
+    notification.innerHTML = `
+        <div class="notification-icon ${type}">
+            ${iconSvg}
+        </div>
+        <div class="notification-content">
+            <div class="notification-title">${title}</div>
+            <div class="notification-message">${message}</div>
+        </div>
+        <button class="notification-close">&times;</button>
+        <div class="notification-progress ${type}"></div>
+    `;
+    
+    // If there's a current notification, fade it out first
+    if (currentNotification) {
+        currentNotification.classList.add('hide');
+        currentNotification.classList.remove('show');
+        
+        // Small delay to allow fade out animation before removal
+        setTimeout(() => {
+            if (currentNotification && currentNotification.parentNode) {
+                currentNotification.parentNode.removeChild(currentNotification);
+            }
+            
+            // Then add the new notification
+            addNewNotification();
+        }, 200); // Shorter fade-out time
+    } else {
+        // No current notification, just add the new one
+        addNewNotification();
+    }
+    
+    function addNewNotification() {
+        // Add to container
+        container.appendChild(notification);
+        
+        // Store reference to current notification
+        currentNotification = notification;
+        
+        // Trigger animation after a small delay to ensure proper rendering
+        setTimeout(() => {
+            notification.classList.add('show');
+            
+            // Animate progress bar
+            const progress = notification.querySelector('.notification-progress');
+            progress.style.animation = `shrink ${duration/1000}s linear forwards`;
+            
+            // Add keyframes for progress bar animation
+            if (!document.querySelector('#notification-keyframes')) {
+                const style = document.createElement('style');
+                style.id = 'notification-keyframes';
+                style.textContent = `
+                    @keyframes shrink {
+                        from { transform: scaleX(1); }
+                        to { transform: scaleX(0); }
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+        }, 10);
+    }
+    
+    // Setup close button
+    const closeBtn = notification.querySelector('.notification-close');
+    closeBtn.addEventListener('click', () => {
+        notification.classList.add('hide');
+        notification.classList.remove('show');
+        
+        setTimeout(() => {
+            if (notification && notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+            if (currentNotification === notification) {
+                currentNotification = null;
+            }
+        }, 200);
+    });
+    
+    // Auto-close after duration
+    setTimeout(() => {
+        if (currentNotification === notification) {
+            notification.classList.add('hide');
+            notification.classList.remove('show');
+            
+            setTimeout(() => {
+                if (notification && notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+                currentNotification = null;
+            }, 200);
+        }
+    }, duration);
+    
+    return notification;
+}
+
+// Close notification with animation
+function closeNotification(notification) {
+    if (!notification) return;
+    
+    notification.classList.remove('show');
+    notification.style.transform = 'translateX(120%)';
+    
+    // Remove from DOM after animation completes
+    setTimeout(() => {
+        if (notification && notification.parentNode) {
+            notification.parentNode.removeChild(notification);
+        }
+    }, 300);
+}
+
+// Add specialized notification functions
+window.successNotification = function(message, title = 'Success') {
+    return showNotification(message, 'success', title);
+};
+
+window.warningNotification = function(message, title = 'Warning') {
+    return showNotification(message, 'warning', title);
+};
+
+window.errorNotification = function(message, title = 'Error') {
+    return showNotification(message, 'error', title);
+};
+
+// Override default alert function with our custom notification
+const originalAlert = window.alert;
+window.alert = function(message) {
+    return showNotification(message);
+};
+
+// Update the existing code that uses alerts
+document.addEventListener('DOMContentLoaded', function() {
+    // Update terminal functionality to use custom notifications
+    const terminals = document.querySelectorAll('.terminal input');
+    terminals.forEach(terminal => {
+        terminal.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                const command = terminal.value.trim().toLowerCase();
+                
+                if (command.includes('add bar') || command.includes('track')) {
+                    terminal.value = 'Updating visualization...';
+                    setTimeout(() => {
+                        terminal.value = '';
+                        successNotification('Visualization updated with new metric', 'Chart Updated');
+                    }, 1000);
+                } else if (command.includes('compare')) {
+                    terminal.value = 'Generating comparison...';
+                    setTimeout(() => {
+                        terminal.value = '';
+                        successNotification('Comparison view activated', 'Comparison Ready');
+                    }, 1000);
+                } else if (command.includes('show')) {
+                    terminal.value = 'Loading data...';
+                    setTimeout(() => {
+                        terminal.value = '';
+                        successNotification('Data visualization updated to show requested metrics', 'Visualization Updated');
+                    }, 1000);
+                } else {
+                    terminal.value = '';
+                    showNotification(`Processing command: "${command}"`, 'info', 'Command Received');
+                }
+            }
+        });
+    });
+    
+    // Update header command input if it exists
+    const commandInput = document.querySelector('.command-input');
+    if (commandInput) {
+        commandInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                const command = commandInput.value.trim().toLowerCase();
+                
+                if (command.includes('add bar') || command.includes('track')) {
+                    commandInput.value = 'Updating visualization...';
+                    setTimeout(() => {
+                        commandInput.value = '';
+                        successNotification('Visualization updated with new metric', 'Chart Updated');
+                    }, 1000);
+                } else if (command.includes('compare')) {
+                    commandInput.value = 'Generating comparison...';
+                    setTimeout(() => {
+                        commandInput.value = '';
+                        successNotification('Comparison view activated', 'Comparison Ready');
+                    }, 1000);
+                } else if (command.includes('show')) {
+                    commandInput.value = 'Loading data...';
+                    setTimeout(() => {
+                        commandInput.value = '';
+                        successNotification('Data visualization updated to show requested metrics', 'Visualization Updated');
+                    }, 1000);
+                } else {
+                    commandInput.value = '';
+                    showNotification(`Processing command: "${command}"`, 'info', 'Command Received');
+                }
+            }
+        });
+    }
+    
+    // Update refresh button to use custom notification
+    const refreshBtn = document.getElementById('refresh-btn');
+    if (refreshBtn) {
+        refreshBtn.addEventListener('click', () => {
+            // Show spinner effect
+            const originalInnerHTML = refreshBtn.innerHTML;
+            refreshBtn.innerHTML = `
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="animate-spin">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <path d="M16 12a4 4 0 1 1-8 0 4 4 0 0 1 8 0z"></path>
+                </svg>
+            `;
+            
+            // Simulate refresh operation
+            setTimeout(() => {
+                refreshBtn.innerHTML = originalInnerHTML;
+                successNotification('All dashboards refreshed with latest data', 'Data Refreshed');
+            }, 1500);
+        });
+    }
+});
+
+// Remove any modals that shouldn't exist
+// Delete the export-chatbot-modal if it exists
+const exportModal = document.getElementById('export-chatbot-modal');
+if (exportModal && exportModal.parentNode) {
+    exportModal.parentNode.removeChild(exportModal);
+}
+</script>
+</body>
+</html>

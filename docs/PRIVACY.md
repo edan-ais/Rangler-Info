@@ -1,35 +1,56 @@
 ## Privacy Policy
 Last Updated: 05-07-2025
 
-This Privacy Policy describes how DataSpace and its parent company, Analytic Intelligence Solutions ("we," "us," or "our"), collects, uses, and discloses information when you use the DataSpace demonstration.
+This Privacy Policy describes how Rangler and its parent company, Analytic Intelligence Solutions ("we," "us," or "our"), collects, uses, and discloses information when you use the DataSpace demonstration.
 
 ## Information Collection
-The DataSpace demo uses local browser storage to store:
+When you use the Rangler demo, we collect:
+- Complete conversation transcripts with our service
+- User analytics including device type, browser information, IP address (anonymized), session duration, and interaction patterns
+- Any information you voluntarily provide during conversations
 
-- Uploaded file types
-- Uploaded file content
-- Uploaded file names
-- Uploaded file changes made in DataSpace
-- All uploaded file information
+This data is stored using our third-party, GDPR-compliant service providers, specifically:
+- Voiceflow: Manages conversation flows and stores interaction data
+- Airtable: Serves as our database for user information and analytics
 
-## Data Storage and Transmission
-All information is stored entirely on your device or within your personal, shareable file copy using our proprietary DataSpace technology. No data is transmitted to our servers. DataSpace operates without requiring external server connections for its core functionality.
+## Data Usage
+We use collected information to:
+- Improve the performance and accuracy of our demo
+- Analyze usage patterns to enhance user experience
+- Train and refine our underlying models
+- Fix technical issues and bugs
 
 ## Data Sharing
-When you choose to share content with others, a copy of the DataSpace file with your selected data attached is created. You control exactly what information is shared and with whom.
+We do not sell your personal data to third parties. Your information is only shared with:
+- Voiceflow and Airtable as our data processors
+- Our employees and contractors who need access for service improvement
+- When required by law or to protect our legal rights
+
+## Data Storage and Retention
+Your data is stored on secure servers managed by our service providers. We retain data for a period of 12 months, after which it is automatically anonymized. You can request data deletion at any time by contacting us at the email provided below.
 
 ## Security
-DataSpace implements multiple security measures:
+Rangler implements multiple security measures including:
+- Encryption of data in transit and at rest
+- Regular security assessments
+- Access controls and authentication requirements
+- Staff training on data protection
 
-- File execution occurs in isolated sandbox environments
-- DataSpace technology automatically neutralizes potentially malicious code
-- No server connections means no vulnerability to typical server-side attacks
+## Your Rights
+Depending on your location, you may have rights to:
+- Access your personal information
+- Correct inaccurate data
+- Request deletion of your data
+- Object to certain processing activities
+- Export your data in a portable format
 
-## Analytics and Tracking
-The DataSpace demonstration does not use cookies, tracking technologies, or analytics tools that send data to third parties.
+To exercise these rights, please contact us using the information below.
+
+## International Data Transfers
+Your data may be processed in countries other than where you reside. We ensure appropriate safeguards are in place to protect your information when transferred internationally.
 
 ## Changes to This Policy
-We may update this Privacy Policy from time to time. The most current version will always be available within the application.
+We may update this Privacy Policy from time to time. The most current version will always be available within the application. Significant changes will be communicated via in-app notification.
 
 ## Contact Information
-For questions about this Privacy Policy, please contact: edan@analyticintelligencesolutions.com
+For questions about this Privacy Policy or to exercise your data rights, please contact: edan@analyticintelligencesolutions.com

@@ -1,11 +1,11 @@
 ## Security and Legal Policy
-Last Updated: 05-07-2025
+Last Updated: 05-15-2025
 
 ## Patent Protection
-The DataSpace technology is the subject of a provisional patent application [APPLICATION NUMBER] filed with [PATENT OFFICE] on [FILING DATE]. Unauthorized use, reproduction, or modification of this technology may constitute patent infringement and may result in legal action.
+The Rangler technology is the subject of a provisional patent application [APPLICATION NUMBER] filed with [PATENT OFFICE] on [FILING DATE]. Unauthorized use, reproduction, or modification of this technology may constitute patent infringement and may result in legal action.
 
 ## Security Framework
-DataSpace employs multiple security layers to protect user data and system integrity:
+Rangler employs multiple security layers to protect user data and system integrity:
 
 - Sandboxed Execution Environment: All game code executes in isolated environments to prevent unauthorized system access.
 - Client-Side Security: Our proprietary DataSpace technology implements client-side validation techniques that protect against common attack vectors.
@@ -23,7 +23,7 @@ If you discover a security vulnerability:
 - Security Updates: Critical security updates will be released as soon as technically feasible.
 
 ## Legal Notices
-DataSpace is the property of Analytic Intelligence Solutions.
+Rangler is the property of Analytic Intelligence Solutions.
 2025 Analytic Intelligence Solutions. All rights reserved.
 
 - Export Compliance: This technology may be subject to export control laws. You may not export or re-export this software in violation of applicable laws.

@@ -12,9 +12,6 @@ Rangler employs multiple security layers to protect user data and system integri
 - **Service Provider Security**: We rely on the security measures provided by our technology stack partners, including Voiceflow and Airtable.
 - **Authentication**: Access to administrative functions requires authentication with appropriate credentials.
 
-## Data Security
-All user data remains on the local device and is never transmitted to external servers without explicit user action. When sharing is initiated by a user, only the specific data selected for sharing is included in the shareable file.
-
 ## Security Vulnerability Reporting
 If you discover a security vulnerability:
 

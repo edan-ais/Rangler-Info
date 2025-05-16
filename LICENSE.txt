@@ -1,11 +1,11 @@
-DataSpace Technology License Agreement
+Rangler Technology License Agreement
 
 Proprietary Technology Notice
-The DataSpace technology is the subject of a provisional patent application (Application Number: [NUMBER]) filed with [PATENT OFFICE] on [FILING DATE]. 
+The Rangler technology (including the SIMS SQL Intellignce and Modeling Support and the ROME Recursive Optimization for Model Enhancement frameworks) is the subject of a provisional patent application (Application Number: [NUMBER]) filed with [PATENT OFFICE] on [FILING DATE]. 
 Copyright © 2025 Analytic Intelligence Solutions. All rights reserved.
 
 Demonstration License Terms
-This Demonstration License ("License") is a legal agreement between you (either an individual or a single entity) and Analytic Intelligence Solutions ("Licensor") for the DataSpace technology demonstration that accompanies this License.
+This Demonstration License ("License") is a legal agreement between you (either an individual or a single entity) and Analytic Intelligence Solutions ("Licensor") for the Rangler technology demonstration that accompanies this License.
 
 BY ACCESSING, VIEWING, OR USING THE SOFTWARE, YOU AGREE TO BE BOUND BY THE TERMS OF THIS LICENSE. IF YOU DO NOT AGREE TO THE TERMS OF THIS LICENSE, DO NOT USE THE SOFTWARE.
 
@@ -23,7 +23,7 @@ You may not:
 - Create derivative works based on any aspect of the Software
 
 3. Proprietary Rights
-The DataSpace technology is a proprietary and patent-pending method for serverless application data persistence, file storage, and distribution. The Technology, including but not limited to all intellectual property rights therein, is owned by Licensor and is protected by United States and international intellectual property laws. All rights not expressly granted are reserved.
+The Rangler technology is a proprietary and patent-pending method for serverless application data persistence, file storage, and distribution. The Technology, including but not limited to all intellectual property rights therein, is owned by Licensor and is protected by United States and international intellectual property laws. All rights not expressly granted are reserved.
 
 4. Term and Termination
 This License is effective until terminated. Licensor reserves the right to terminate this License at any time if you fail to comply with any term or condition of this License. Upon termination, you must cease all use of the Software.

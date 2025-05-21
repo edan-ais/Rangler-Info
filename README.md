@@ -8,8 +8,6 @@ This repository serves as the public information hub and access point for the Ra
 - Visit https://edan-ais.github.io/Rangler/ to try the tool frontend.
 - Visit https://creator.voiceflow.com/prototype/67bd34cd2adc98c43ffa984e to try the tool backend.
 - Visit https://rangler-backend.onrender.com to try the MVP Metabase MCP server.
-- Visit http://link to buy the full technical documentation in book form.
-- Visit http://link to read the full technical documentation (for free!).
 
 ## Patent Notice
 The Rangler technology is patent-pending under provisional application number [APPLICATION NUMBER] filed with [PATENT OFFICE] on [FILING DATE].

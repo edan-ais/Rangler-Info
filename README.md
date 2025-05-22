@@ -29,7 +29,7 @@ Rangler's process begins with a tracking command (e.g., "Track new hire onboardi
 Future enhancements will focus on expanding Rangler's notification capabilities, integration with additional data sources, and development of domain-specific intelligence modules for specialized business functions. Our vision is to make Rangler the standard for intelligent data monitoring across industries including finance, healthcare, retail, and manufacturing.
 
 ## System Requirements
-For optimal performance, Rangler requires a modern web browser with JavaScript enabled and appropriate data source access credentials.
+For optimal performance on custom implementations, Rangler will require appropriate data source access credentials.
 
 ## Legal Information
 For detailed legal information, please refer to our License, Terms of Use, and Privacy Policy documents. For licensing inquiries regarding the Rangler technology, please contact edan@analyticintelligencesolutions.com.

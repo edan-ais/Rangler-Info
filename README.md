@@ -7,7 +7,7 @@ This repository serves as the public information hub and access point for the Ra
 ## Try Rangler
 - Visit https://edan-ais.github.io/Rangler/ to try the tool HTML-based interactive frontend.
 - Visit https://creator.voiceflow.com/prototype/67bd34cd2adc98c43ffa984e to try the tool backend AI-driven automation workflow.
-- You'll find that https://rangler-backend.onrender.com hosts the MVP Metabase MCP server.
+- You'll find that https://rangler-backend.onrender.com hosts the MVP Metabase MCP server. To test this, copy and paste the full contents of COPY-THIS-claude_desktop_config.json into your claude_desktop_config.json file, and open restart Claude Desktop on your computer to see the tools populate in your toolbox.
 
 ## Patent Notice
 The Rangler technology is patent-pending under provisional application number [APPLICATION NUMBER] filed with [PATENT OFFICE] on [FILING DATE].

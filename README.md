@@ -5,8 +5,8 @@ RocketMoney for data analytics. A full-stack AI data management tool that change
 This repository serves as the public information hub and access point for the Rangler technology. The core source code for Rangler is maintained in a private repository to protect our proprietary patent-pending data interaction and analysis technology. This repository is ONLY for remote access and information on Rangler. For licensing inquiries regarding the DataSpace technology, please contact edan@analyticintelligencesolutions.com.
 
 ## Try Rangler
-- Visit https://edan-ais.github.io/Rangler/ to try the tool HTML-based interactive frontend.
-- Visit https://creator.voiceflow.com/prototype/67bd34cd2adc98c43ffa984e to try the tool backend AI-driven automation workflow.
+- Visit https://edan-ais.github.io/Rangler/ to try the Rangler Enterprise HTML-based interactive frontend.
+- Visit https://github.com/edan-ais/Rangler-Agent to try the Rangler Agent AI-driven automation workflow.
 - You'll find that https://rangler-backend.onrender.com hosts the MVP Metabase MCP server. To test this, copy and paste the full contents of COPY-THIS-claude_desktop_config.json into your claude_desktop_config.json file, and open restart Claude Desktop on your computer to see the tools populate in your toolbox.
 
 ## Patent Notice
